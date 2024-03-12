@@ -97,7 +97,7 @@ class _MyMenuBarState extends State<MyMenuBar> {
             onPressed: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'MenuBar Sample',
+                applicationName: 'i18n Editor',
                 applicationVersion: '1.0.0',
               );
             },
