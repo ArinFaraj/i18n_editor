@@ -1,9 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:i18n_editor/home_page.dart';
-import 'package:i18n_editor/utils.dart';
 
 class MenuEntry {
   const MenuEntry(
@@ -79,11 +75,6 @@ class _MyMenuBarState extends State<MyMenuBar> {
             children: MenuEntry.build(_getMenus()),
           ),
         ),
-        ValueListenableBuilder(
-            valueListenable: openedDirectory,
-            builder: (context, value, child) {
-              return Text('Current folder: $value');
-            }),
       ],
     );
   }
@@ -98,8 +89,8 @@ class _MyMenuBarState extends State<MyMenuBar> {
               shortcut:
                   const SingleActivator(LogicalKeyboardKey.keyO, control: true),
               onPressed: () async {
-                final Directory? directory = await selectADirectory(context);
-                openedDirectory.value = directory;
+                // final Directory? directory = await selectADirectory(context);
+                // openedDirectory.value = directory;
               }),
           MenuEntry(
             label: 'About',

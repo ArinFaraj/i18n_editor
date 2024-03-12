@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:i18n_editor/home_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:i18n_editor/core/router/router.dart';
 
-class I18nApp extends StatelessWidget {
+class I18nApp extends ConsumerWidget {
   const I18nApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
+    return MaterialApp.router(
       title: 'I18n Editor',
+      routerConfig: router,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
@@ -15,7 +19,6 @@ class I18nApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomePage(),
     );
   }
 }
