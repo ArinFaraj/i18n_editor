@@ -1,5 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:i18n_editor/core/settings/recent_projects.dart';
+import 'package:i18n_editor/home/provider/project_manager.dart';
 
 class MenuEntry {
   const MenuEntry(
@@ -48,16 +52,16 @@ class MenuEntry {
   }
 }
 
-class MyMenuBar extends StatefulWidget {
+class MyMenuBar extends ConsumerStatefulWidget {
   const MyMenuBar({
     super.key,
   });
 
   @override
-  State<MyMenuBar> createState() => _MyMenuBarState();
+  ConsumerState<MyMenuBar> createState() => _MyMenuBarState();
 }
 
-class _MyMenuBarState extends State<MyMenuBar> {
+class _MyMenuBarState extends ConsumerState<MyMenuBar> {
   ShortcutRegistryEntry? _shortcutsEntry;
 
   @override
@@ -85,13 +89,28 @@ class _MyMenuBarState extends State<MyMenuBar> {
         label: 'File',
         menuChildren: <MenuEntry>[
           MenuEntry(
-              label: 'Open Folder',
-              shortcut:
-                  const SingleActivator(LogicalKeyboardKey.keyO, control: true),
-              onPressed: () async {
-                // final Directory? directory = await selectADirectory(context);
-                // openedDirectory.value = directory;
-              }),
+            label: 'Open Folder',
+            shortcut:
+                const SingleActivator(LogicalKeyboardKey.keyO, control: true),
+            onPressed: () async {
+              final dir = await FilePicker.platform.getDirectoryPath();
+              if (dir == null) return;
+              ref.read(projectManagerProvider.notifier).openProject(dir);
+            },
+          ),
+          // recent projects
+          MenuEntry(label: 'Recent Projects', menuChildren: [
+            for (final project
+                in ref.watch(recentProjectsProvider).requireValue)
+              MenuEntry(
+                label: project,
+                onPressed: () {
+                  ref
+                      .read(projectManagerProvider.notifier)
+                      .openProject(project);
+                },
+              ),
+          ]),
           MenuEntry(
             label: 'About',
             onPressed: () {
@@ -105,8 +124,6 @@ class _MyMenuBarState extends State<MyMenuBar> {
         ],
       ),
     ];
-    // (Re-)register the shortcuts with the ShortcutRegistry so that they are
-    // available to the entire application, and update them if they've changed.
     _shortcutsEntry?.dispose();
     _shortcutsEntry =
         ShortcutRegistry.of(context).addAll(MenuEntry.shortcuts(result));

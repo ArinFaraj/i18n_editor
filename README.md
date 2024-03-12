@@ -11,3 +11,7 @@ we must sync the keys between all the files and have a tree in the ui representi
 
 when we select a key we must see the translations of that key in all the files and have textfields for each of the languages to edit the translations.
 
+---
+i18n project file content (.i18n_project.yaml):
+file_prefix: strings
+
