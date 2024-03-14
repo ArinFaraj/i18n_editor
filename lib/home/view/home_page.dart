@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:i18n_editor/home/widget/menu_bar.dart';
+import 'package:i18n_editor/home/widget/home_menu_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          MyMenuBar(),
+          HomeMenuBar(),
         ],
       ),
     );

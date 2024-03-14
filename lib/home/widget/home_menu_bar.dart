@@ -4,64 +4,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
+import 'package:i18n_editor/home/widget/menu_entry.dart';
 
-class MenuEntry {
-  const MenuEntry(
-      {required this.label, this.shortcut, this.onPressed, this.menuChildren})
-      : assert(menuChildren == null || onPressed == null,
-            'onPressed is ignored if menuChildren are provided');
-  final String label;
-
-  final MenuSerializableShortcut? shortcut;
-  final VoidCallback? onPressed;
-  final List<MenuEntry>? menuChildren;
-
-  static List<Widget> build(List<MenuEntry> selections) {
-    Widget buildSelection(MenuEntry selection) {
-      if (selection.menuChildren != null) {
-        return SubmenuButton(
-          menuChildren: MenuEntry.build(selection.menuChildren!),
-          child: Text(selection.label),
-        );
-      }
-      return MenuItemButton(
-        shortcut: selection.shortcut,
-        onPressed: selection.onPressed,
-        child: Text(selection.label),
-      );
-    }
-
-    return selections.map<Widget>(buildSelection).toList();
-  }
-
-  static Map<MenuSerializableShortcut, Intent> shortcuts(
-      List<MenuEntry> selections) {
-    final Map<MenuSerializableShortcut, Intent> result =
-        <MenuSerializableShortcut, Intent>{};
-    for (final MenuEntry selection in selections) {
-      if (selection.menuChildren != null) {
-        result.addAll(MenuEntry.shortcuts(selection.menuChildren!));
-      } else {
-        if (selection.shortcut != null && selection.onPressed != null) {
-          result[selection.shortcut!] =
-              VoidCallbackIntent(selection.onPressed!);
-        }
-      }
-    }
-    return result;
-  }
-}
-
-class MyMenuBar extends ConsumerStatefulWidget {
-  const MyMenuBar({
+class HomeMenuBar extends ConsumerStatefulWidget {
+  const HomeMenuBar({
     super.key,
   });
 
   @override
-  ConsumerState<MyMenuBar> createState() => _MyMenuBarState();
+  ConsumerState<HomeMenuBar> createState() => _MyMenuBarState();
 }
 
-class _MyMenuBarState extends ConsumerState<MyMenuBar> {
+class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
   ShortcutRegistryEntry? _shortcutsEntry;
 
   @override
@@ -76,7 +30,15 @@ class _MyMenuBarState extends ConsumerState<MyMenuBar> {
       children: [
         Expanded(
           child: MenuBar(
-            children: MenuEntry.build(_getMenus()),
+            children: [
+              ...MenuEntry.build(_getMenus()),
+              const SizedBox(width: 16),
+              Center(
+                child: Text(
+                  ref.watch(projectManagerProvider) ?? 'No Project Opened',
+                ),
+              ),
+            ],
           ),
         ),
       ],
