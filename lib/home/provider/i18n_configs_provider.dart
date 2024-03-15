@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:i18n_editor/home/model/i18n_configs.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/utils.dart';
