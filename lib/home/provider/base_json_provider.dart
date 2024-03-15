@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:i18n_editor/home/provider/directory_watcher.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
@@ -24,7 +23,6 @@ final baseLocaleJsonProvider = FutureProvider<Map<String, dynamic>?>(
     ref.listen(projectFolderWatcherProvider, (prev, next) {
       next.whenData((value) {
         final baseLocaleChanged = value?.path.contains(baseLocalePath) ?? false;
-        logger.warning('baseLocaleChanged: $value');
 
         if (baseLocaleChanged) ref.invalidateSelf();
       });
