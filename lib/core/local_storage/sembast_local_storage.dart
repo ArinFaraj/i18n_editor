@@ -41,13 +41,13 @@ class SembastLocalStorageRepository implements LocalStorageRepository {
   Future<T?> get<T>(String id) async {
     final data = await _store.record(id).get(_db!) as T?;
 
-    logger.debug('get: $id $data');
+    // logger.verbose('get: $id $data');
     return data;
   }
 
   @override
   Future<void> set<T>(String id, T data) async {
-    logger.debug('set: $id $data');
+    // logger.verbose('set: $id $data');
     await _store.record(id).put(_db!, data);
   }
 
