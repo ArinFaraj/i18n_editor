@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i18n_editor/home/provider/directory_watcher.dart';
+import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
@@ -22,8 +22,9 @@ class HomePage extends ConsumerWidget {
       }
     });
 
-    final files = ref.watch(filesNotifierProvider);
-    final keys = ref.watch(keysProvider);
+    // final files = ref.watch(filesNotifierProvider);
+    final keys = ref.watch(baseLocaleKeysProvider);
+    logger.info('building HomePage');
 
     return Scaffold(
       body: Column(
@@ -32,18 +33,23 @@ class HomePage extends ConsumerWidget {
           const HomeMenuBar(),
           Text('Refreshed at ${DateTime.now()}'),
           const Divider(),
-          files.when<Widget>(
-            data: (files_) => ListView.builder(
-              shrinkWrap: true,
-              itemCount: files_?.length ?? 1,
-              itemBuilder: (context, index) =>
-                  Text(files_?[index] ?? 'No files'),
-            ),
-            error: (e, s) => Text('$e\n$s'),
-            loading: () => const CircularProgressIndicator(),
-          ),
+          // files.when<Widget>(
+          //   data: (files_) => ListView.builder(
+          //     shrinkWrap: true,
+          //     itemCount: files_?.length ?? 1,
+          //     itemBuilder: (context, index) =>
+          //         Text(files_?[index] ?? 'No files'),
+          //   ),
+          //   error: (e, s) => Text('$e\n$s'),
+          //   loading: () => const CircularProgressIndicator(),
+          // ),
           keys.when<Widget>(
-            data: (files_) => Text(files_.toString()),
+            data: (key_) => ListView.builder(
+              shrinkWrap: true,
+              itemCount: key_?.length ?? 1,
+              itemBuilder: (context, index) =>
+                  Text(key_?[index].toString() ?? 'No files'),
+            ),
             error: (e, s) => Text('$e\n$s'),
             loading: () => const CircularProgressIndicator(),
           ),
