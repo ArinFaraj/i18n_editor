@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -15,16 +14,18 @@ class ProjectManagerNotifier extends Notifier<Project?> {
   void openProject(String dirPath) async {
     Directory dir = Directory(dirPath);
 
+    final newRecentProjects =
+        List<String>.from(ref.read(recentProjectsProvider).requireValue)
+          ..remove(dirPath)
+          ..insert(0, dirPath);
+
     if (await dir.exists()) {
       state = dirPath;
-      logger.verbose('Open project: $dirPath');
+    } else {
+      newRecentProjects.remove(dirPath);
     }
 
-    ref.read(recentProjectsProvider.notifier).set(
-          [...ref.read(recentProjectsProvider).requireValue]
-            ..remove(dirPath)
-            ..insert(0, dirPath),
-        );
+    ref.read(recentProjectsProvider.notifier).set(newRecentProjects);
   }
 
   void closeProject() {
@@ -33,6 +34,9 @@ class ProjectManagerNotifier extends Notifier<Project?> {
 }
 
 final projectManagerProvider =
-    NotifierProvider<ProjectManagerNotifier, Project?>(() {
-  return ProjectManagerNotifier();
-});
+    NotifierProvider<ProjectManagerNotifier, Project?>(
+  () {
+    return ProjectManagerNotifier();
+  },
+  name: 'projectManager',
+);
