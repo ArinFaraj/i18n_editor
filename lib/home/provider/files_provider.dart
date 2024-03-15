@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:i18n_editor/home/provider/directory_watcher.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:riverpod/riverpod.dart';
 
 typedef Files = List<String>;
 
-final filesNotifierProvider =
-    AsyncNotifierProvider.autoDispose<FilesNotifier, Files?>(FilesNotifier.new);
+final filesNotifierProvider = AsyncNotifierProvider<FilesNotifier, Files?>(
+  FilesNotifier.new,
+  name: 'filesNotifier',
+);
 
-class FilesNotifier extends AutoDisposeAsyncNotifier<Files?> {
+class FilesNotifier extends AsyncNotifier<Files?> {
   @override
   Future<Files?> build() async {
     final projectPath = ref.watch(projectManagerProvider);
@@ -20,7 +21,6 @@ class FilesNotifier extends AutoDisposeAsyncNotifier<Files?> {
     }
 
     final files = await _getFiles(projectPath);
-    logger.info('Files: $files');
 
     ref.listen(projectFolderWatcherProvider, (prev, next) async {
       ref.invalidateSelf();

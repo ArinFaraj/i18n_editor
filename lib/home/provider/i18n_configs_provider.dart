@@ -14,28 +14,25 @@ const _i18nFileName = '.i18n_configs.yaml';
 final i18nConfigsProvider =
     AsyncNotifierProvider<I18nConfigsNotifier, I18nConfigs?>(
   I18nConfigsNotifier.new,
+  name: 'i18nConfigs',
 );
 
 class I18nConfigsNotifier extends AsyncNotifier<I18nConfigs?> {
   @override
   Future<I18nConfigs?> build() async {
-    final projectPath = ref.read(projectManagerProvider);
+    final projectPath = ref.watch(projectManagerProvider);
     if (projectPath == null) {
-      logger.verbose('No project path');
       return null;
     }
 
     final i18nYaml = File(join(projectPath, _i18nFileName));
     if (!await i18nYaml.exists()) {
-      logger.verbose('No i18n file');
-
       return null;
     }
 
     final i18nConfigsMap = (loadYaml(await i18nYaml.readAsString()) as YamlMap);
     final i18nConfigs =
         I18nConfigs.fromMap(convertYamlMapToMap(i18nConfigsMap));
-    logger.verbose('I18n configs loaded: $i18nConfigs');
 
     return i18nConfigs;
   }

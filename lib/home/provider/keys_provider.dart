@@ -1,33 +1,34 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:i18n_editor/home/provider/files_provider.dart';
-import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
-import 'package:i18n_editor/home/provider/project_manager.dart';
-import 'package:path/path.dart';
+import 'package:i18n_editor/core/logger/talker.dart';
+import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:riverpod/riverpod.dart';
 
-final keysProvider = FutureProvider.autoDispose((ref) async {
-  final projectPath = ref.watch(projectManagerProvider);
-  if (projectPath == null) return null;
+typedef JsonKey = List<dynamic>;
 
-  final i18nConfigs = ref.watch(i18nConfigsProvider);
-  if (!i18nConfigs.hasValue) {
-    return null;
+final baseLocaleKeysProvider = FutureProvider<List<JsonKey>?>(
+  (ref) async {
+    final baseJson = await ref.watch(baseLocaleJsonProvider.future);
+    logger.info('baseJson: $baseJson');
+    return extractKeyPaths(baseJson);
+  },
+  name: 'baseLocaleKeys',
+);
+
+List<JsonKey> extractKeyPaths(dynamic json, [List<dynamic> path = const []]) {
+  final keyPaths = <List<dynamic>>[];
+
+  if (json is Map) {
+    json.forEach((key, value) {
+      final newPath = [...path, key];
+      keyPaths.addAll(extractKeyPaths(value, newPath));
+    });
+  } else if (json is List) {
+    for (int i = 0; i < json.length; i++) {
+      final newPath = [...path, i];
+      keyPaths.addAll(extractKeyPaths(json[i], newPath));
+    }
+  } else {
+    keyPaths.add(path);
   }
 
-  final baseLocalePath =
-      join(projectPath, '${i18nConfigs.value!.filePrefix}.json');
-
-  ref.listen(filesNotifierProvider, (prev, next) {
-    next.whenData((value) {
-      final baseLocaleChanged =
-          value?.any((element) => element.contains(baseLocalePath)) ?? false;
-
-      if (baseLocaleChanged) ref.invalidateSelf();
-    });
-  });
-  final baseLocaleJson = jsonDecode(await File(baseLocalePath).readAsString())
-      as Map<String, dynamic>;
-  return baseLocaleJson;
-});
+  return keyPaths;
+}
