@@ -13,8 +13,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(projectManagerProvider, (prev, next) async {
       if (prev != next && next != null) {
-        ref.invalidate(i18nConfigsProvider);
-        final configs = await ref.read(i18nConfigsProvider.future);
+        final configs = await ref.refresh(i18nConfigsProvider.future);
         if (configs == null && context.mounted) {
           showNewProjectDialog(context, ref);
         }
@@ -30,24 +29,15 @@ class HomePage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const HomeMenuBar(),
-          Text('Refreshed at ${DateTime.now()}'),
-          const Divider(),
-          // files.when<Widget>(
-          //   data: (files_) => ListView.builder(
-          //     shrinkWrap: true,
-          //     itemCount: files_?.length ?? 1,
-          //     itemBuilder: (context, index) =>
-          //         Text(files_?[index] ?? 'No files'),
-          //   ),
-          //   error: (e, s) => Text('$e\n$s'),
-          //   loading: () => const CircularProgressIndicator(),
-          // ),
-          keys.when<Widget>(
+          keys.when(
+            skipLoadingOnRefresh: true,
             data: (key_) => ListView.builder(
               shrinkWrap: true,
               itemCount: key_?.length ?? 1,
-              itemBuilder: (context, index) =>
-                  Text(key_?[index].toString() ?? 'No files'),
+              itemBuilder: (context, index) => ListTile(
+                title: Text(key_?[index].toString() ?? 'No files'),
+                onTap: () {},
+              ),
             ),
             error: (e, s) => Text('$e\n$s'),
             loading: () => const CircularProgressIndicator(),

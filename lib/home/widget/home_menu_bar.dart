@@ -30,12 +30,16 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
     return Card(
       child: Row(
         children: [
+          const SizedBox(width: 8),
+          Icon(
+            Icons.language,
+            size: 18,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 6),
           MenuBar(
             style: const MenuStyle(
               elevation: MaterialStatePropertyAll(0.0),
-              padding: MaterialStatePropertyAll(
-                EdgeInsets.symmetric(horizontal: 16),
-              ),
               backgroundColor: MaterialStatePropertyAll(Colors.transparent),
             ),
             children: MenuEntry.build(_getMenus()),
