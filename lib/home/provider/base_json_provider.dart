@@ -7,7 +7,7 @@ import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
-final baseLocaleJsonProvider = FutureProvider<Map<String, dynamic>?>(
+final baseLocalePathProvider = FutureProvider(
   (ref) async {
     final projectPath = ref.watch(projectManagerProvider);
     if (projectPath == null) return null;
@@ -19,6 +19,15 @@ final baseLocaleJsonProvider = FutureProvider<Map<String, dynamic>?>(
     }
 
     final baseLocalePath = join(projectPath, '$filePrefix.json');
+    return baseLocalePath;
+  },
+  name: 'baseLocalePath',
+);
+
+final baseLocaleJsonProvider = FutureProvider<Map<String, dynamic>?>(
+  (ref) async {
+    final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
+    if (baseLocalePath == null) return null;
 
     ref.listen(projectFolderWatcherProvider, (prev, next) {
       next.whenData((value) {
