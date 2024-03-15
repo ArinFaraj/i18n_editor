@@ -49,7 +49,10 @@ dependencies:
   go_router: ^13.2.0
   flutter_animate: ^4.5.0
   file_picker: ^6.2.0
+  yaml: ^3.1.2
   simple_logger: ^1.9.0+3
+  yaml_writer: ^2.0.0
+  watcher: ^1.1.0
 
 dev_dependencies:
   flutter_test:

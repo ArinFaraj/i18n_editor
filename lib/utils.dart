@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:yaml/yaml.dart';
 
 Future<Directory?> selectADirectory(BuildContext context) async {
   final result = await showDialog<Directory>(
@@ -60,4 +61,17 @@ Future<Directory?> selectADirectory(BuildContext context) async {
   );
 
   return result;
+}
+
+Map<String, dynamic> convertYamlMapToMap(YamlMap yamlMap) {
+  final map = <String, dynamic>{};
+
+  for (final entry in yamlMap.entries) {
+    if (entry.value is YamlMap || entry.value is Map) {
+      map[entry.key.toString()] = convertYamlMapToMap(entry.value);
+    } else {
+      map[entry.key.toString()] = entry.value.toString();
+    }
+  }
+  return map;
 }
