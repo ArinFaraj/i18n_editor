@@ -17,7 +17,7 @@ class ProjectManagerNotifier extends Notifier<Project?> {
 
     if (await dir.exists()) {
       state = dirPath;
-      logger.info('Open project: $dirPath');
+      logger.verbose('Open project: $dirPath');
     }
 
     ref.read(recentProjectsProvider.notifier).set(
@@ -25,6 +25,10 @@ class ProjectManagerNotifier extends Notifier<Project?> {
             ..remove(dirPath)
             ..insert(0, dirPath),
         );
+  }
+
+  void closeProject() {
+    state = null;
   }
 }
 

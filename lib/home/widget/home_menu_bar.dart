@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
+import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/home/widget/menu_entry.dart';
 
@@ -26,22 +27,38 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: MenuBar(
-            children: [
-              ...MenuEntry.build(_getMenus()),
-              const SizedBox(width: 16),
-              Center(
-                child: Text(
-                  ref.watch(projectManagerProvider) ?? 'No Project Opened',
-                ),
+    return Card(
+      child: Row(
+        children: [
+          MenuBar(
+            style: const MenuStyle(
+              elevation: MaterialStatePropertyAll(0.0),
+              padding: MaterialStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 16),
               ),
-            ],
+              backgroundColor: MaterialStatePropertyAll(Colors.transparent),
+            ),
+            children: MenuEntry.build(_getMenus()),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Center(
+              child: Text(
+                ref.watch(projectManagerProvider) ?? 'No Project Opened',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          Center(
+            child: Text(
+              ref.watch(i18nConfigsProvider).value?.toString() ??
+                  'No i18n Configs Loaded',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
     );
   }
 
