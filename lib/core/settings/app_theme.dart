@@ -13,4 +13,5 @@ final appThemeProvider =
     ),
     (value) => value.name,
   ),
+  name: 'appTheme',
 );

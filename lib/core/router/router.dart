@@ -12,4 +12,5 @@ final routerProvider = Provider(
       ),
     ],
   ),
+  name: 'router',
 );

@@ -9,4 +9,5 @@ final recentProjectsProvider = AsyncNotifierProvider<
     (value) => value.cast<String>(),
     (value) => value,
   ),
+  name: 'recentProjects',
 );

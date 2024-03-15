@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:i18n_editor/core/local_storage/local_storage_repository.dart';
-import 'package:i18n_editor/core/logger/talker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod/riverpod.dart';
@@ -77,8 +76,11 @@ class SembastLocalStorageRepository implements LocalStorageRepository {
   }
 }
 
-final localStorageRepoProvider = FutureProvider((ref) async {
-  final sembastRepo = SembastLocalStorageRepository();
-  await sembastRepo._checkInitialized();
-  return sembastRepo;
-});
+final localStorageRepoProvider = FutureProvider(
+  (ref) async {
+    final sembastRepo = SembastLocalStorageRepository();
+    await sembastRepo._checkInitialized();
+    return sembastRepo;
+  },
+  name: 'localStorageRepo',
+);
