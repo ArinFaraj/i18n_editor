@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
+import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 
 Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
   return ListView.builder(
@@ -25,9 +26,16 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
             JsonString node_ => ListTile(
                 title: Padding(
                   padding: EdgeInsets.only(left: depth * 16),
-                  child: Text(node_.address.last.toString()),
+                  child: Badge(
+                    isLabelVisible: ref
+                        .watch(modifiedNodesProvider)
+                        .containsKey(node_.address),
+                    child: Text(
+                      node_.address.last.toString(),
+                    ),
+                  ),
                 ),
-                selected: ref.watch(selectedNode) == node_,
+                selected: ref.watch(selectedNode)?.address == node_.address,
                 dense: true,
                 onTap: () {
                   ref.read(selectedNode.notifier).state = node_;

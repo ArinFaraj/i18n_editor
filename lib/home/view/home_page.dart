@@ -21,7 +21,7 @@ class HomePage extends ConsumerWidget {
       }
     });
 
-    final keys = ref.watch(baseLocaleKeysProvider);
+    final keys = ref.watch(keysProvider);
     final selectedNode_ = ref.watch(selectedNode);
 
     return Scaffold(

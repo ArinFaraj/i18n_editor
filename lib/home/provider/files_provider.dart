@@ -28,9 +28,6 @@ class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
     }
     final files = await _getFiles(projectPath, prefix);
 
-    // ref.listen(projectFolderWatcherProvider, (prev, next) async {
-    //   ref.invalidateSelf();
-    // });
     return files;
   }
 
@@ -40,9 +37,10 @@ class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
     final dir = Directory(projectPath);
     final files = <String>[];
     final lister = dir.list(recursive: true);
+
     lister.listen((event) {
       if (event is File &&
-          RegExp('.*[\\\\/]$prefix.*\\.json').hasMatch(event.path)) {
+          RegExp('.*[\\\\/]$prefix.+\\.json').hasMatch(event.path)) {
         files.add(event.path);
       }
     }, onDone: () async {
@@ -55,6 +53,7 @@ class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
       }
       completer.complete(finalfiles);
     });
+
     return completer.future;
   }
 }
