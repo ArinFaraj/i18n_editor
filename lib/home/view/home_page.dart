@@ -22,6 +22,7 @@ class HomePage extends ConsumerWidget {
     });
 
     final keys = ref.watch(baseLocaleKeysProvider);
+    final selectedNode_ = ref.watch(selectedNode);
 
     return Scaffold(
       body: Column(
@@ -50,9 +51,11 @@ class HomePage extends ConsumerWidget {
                         ),
                       ),
                       const VerticalDivider(),
-                      const Expanded(
+                      Expanded(
                         flex: 2,
-                        child: Editor(),
+                        child: selectedNode_ == null
+                            ? const Center(child: Text('Select a key to edit'))
+                            : const Editor(),
                       ),
                     ],
                   ),

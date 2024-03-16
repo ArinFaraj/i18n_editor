@@ -48,23 +48,33 @@ class LocaleKeyEditor extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedNode_ = ref.watch(selectedNode);
-    if (selectedNode_ == null) return const Text('No node selected');
-    final value = ref.watch(keyValueProvider((file.$2, selectedNode_.address)));
-    final textController = useTextEditingController();
+    final selectedNode_ = ref.watch(selectedNode)!;
+    final value = ref.read(keyValueProvider((file.$2, selectedNode_.address)));
+    final textController = useTextEditingController(text: value);
 
     useEffect(() {
       textController.text = value ?? '';
       return null;
     }, [value]);
 
+    final direction = useState(TextDirection.ltr);
+
+    useEffect(() {
+      void updateDirection() {
+        direction.value =
+            isRTL(textController.text) ? TextDirection.rtl : TextDirection.ltr;
+      }
+
+      textController.addListener(updateDirection);
+      return () => textController.removeListener(updateDirection);
+    }, [textController]);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(file.$1),
         Directionality(
-          textDirection:
-              isRTL(value ?? '') ? TextDirection.rtl : TextDirection.ltr,
+          textDirection: direction.value,
           child: TextField(
             controller: textController,
           ),
