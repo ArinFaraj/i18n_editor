@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
@@ -9,6 +11,7 @@ final selectedNode = StateProvider<JsonString?>(
   (ref) => null,
   name: 'selectedNode',
 );
+
 final keysProvider = AsyncNotifierProvider<KeysNotifier, List<Node>?>(
   KeysNotifier.new,
   name: 'baseLocaleKeys',
@@ -54,22 +57,57 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
     );
   }
 
-//   Future<void> saveFiles() async {
-//     final modifiedNodes = ref.read(modifiedNodesProvider);
-//     final files = ref.read(filesNotifierProvider);
-//     if (modifiedNodes.isEmpty) return;
-//     final modifiedFiles = modifiedNodes.entries
-//         .map((e) => e.key.last)
-//         .toSet()
-//         .map((file) => files[file]!)
-//         .toList();
-//     await Future.wait(modifiedFiles.map((file) async {
-//       final json = await file.readAsString();
-//       final updatedJson = updateJson(json, modifiedNodes, file.$1);
-//       await file.writeAsString(updatedJson);
-//     }));
-//     ref.read(modifiedNodesProvider.notifier).clear();
-//   }
+  Future<void> saveFiles() async {
+    final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
+    if (baseLocalePath == null) return;
+
+    final files = (await ref.read(filesNotifierProvider.future))
+        ?.map((e) => e.$1)
+        .toList();
+    if (files == null) return;
+    files.insert(0, baseLocalePath);
+    final data = state.value;
+    if (data == null) return;
+    const encoder = JsonEncoder.withIndent('  ');
+    final filesData = <String, Map<String, dynamic>>{};
+
+    void addData(dynamic json) {
+      if (json is JsonObject) {
+        for (final child in json.children) {
+          addData(child);
+        }
+      } else if (json is JsonString) {
+        for (final file in files) {
+          final content = json.values[file];
+          final path = json.address;
+
+          if (content != null) {
+            filesData[file] = filesData[file] ?? {};
+            dynamic current = filesData[file]!;
+            for (final key in path) {
+              if (key == path.last) {
+                current[key] = content;
+              } else {
+                current[key] = current[key] ?? {};
+                current = current[key];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (final item in data) {
+      addData(item);
+    }
+
+    for (final MapEntry(key: path, value: content) in filesData.entries) {
+      final stringContent = encoder.convert(content);
+      await File(path).writeAsString(stringContent);
+    }
+
+    ref.invalidate(modifiedNodesProvider);
+  }
 }
 
 sealed class Node {
