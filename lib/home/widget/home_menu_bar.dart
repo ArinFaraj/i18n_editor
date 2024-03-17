@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
+import 'package:i18n_editor/home/provider/keys_provider.dart';
+import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/home/widget/menu_entry.dart';
 
@@ -72,6 +76,17 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
         label: 'File',
         menuChildren: <MenuEntry>[
           MenuEntry(
+            label: 'Save Files',
+            shortcut:
+                const SingleActivator(LogicalKeyboardKey.keyS, control: true),
+            onPressed: ref.watch(modifiedNodesProvider).isEmpty ||
+                    ref.watch(keysProvider).valueOrNull == null
+                ? null
+                : () async {
+                    await ref.read(keysProvider.notifier).saveFiles();
+                  },
+          ),
+          MenuEntry(
             label: 'Open Folder',
             shortcut:
                 const SingleActivator(LogicalKeyboardKey.keyO, control: true),
@@ -102,6 +117,13 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
                 applicationName: 'i18n Editor',
                 applicationVersion: '1.0.0',
               );
+            },
+          ),
+          // Quit
+          MenuEntry(
+            label: 'Exit',
+            onPressed: () {
+              exit(0);
             },
           ),
         ],
