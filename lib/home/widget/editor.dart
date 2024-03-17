@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:collection/algorithms.dart';
+import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
@@ -15,7 +18,7 @@ final selectedNodeProvider = FutureProvider<JsonString?>(
 
 final selectedAddressProvider = StateProvider<List<dynamic>?>(
   (ref) => null,
-  name: 'selectedAddressProvider',
+  name: 'selectedAddress',
 );
 
 final keysProvider = AsyncNotifierProvider<KeysNotifier, List<Node>?>(
@@ -46,6 +49,21 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
     ref
         .read(modifiedNodesProvider.notifier)
         .add(address: node.address, changedFiles: node.values.keys.toList());
+  }
+
+  void addEmptyNode(List<dynamic> address) {
+    if (state.value == null) return;
+    final node = JsonString(
+      address,
+      {},
+    );
+    state = AsyncData(
+      setValue(state.value!, address, node.values),
+    );
+    ref.read(modifiedNodesProvider.notifier).add(
+      address: address,
+      changedFiles: [],
+    );
   }
 
   Future<void> updateSelectedNode(String file, String value) async {
@@ -134,31 +152,6 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
   }
 }
 
-sealed class Node {
-  const Node(this.address);
-
-  final List<dynamic> address;
-}
-
-class JsonString extends Node {
-  const JsonString(super.address, this.values);
-  final Map<String, String?> values;
-
-  JsonString copyWith({Map<String, String?>? values}) {
-    return JsonString(address, values ?? this.values);
-  }
-
-  JsonString updateFileValue(String file, String? value) {
-    return copyWith(
-      values: Map.from(values)..[file] = value,
-    );
-  }
-}
-
-class JsonObject extends Node {
-  const JsonObject(this.children, super.address);
-  final List<Node> children;
-}
 
 List<Node> extractAllNodes(
   String baseLocalePath,
@@ -214,11 +207,14 @@ String? getValue(Map<String, dynamic> json, List<dynamic> address) {
 
 List<Node> setValue(
     List<Node> oldNodes, List<dynamic> address, Map<String, String?> values) {
+  // final key = address.last;
+  final tail = address.sublist(0, address.length - 1);
+
   List<Node> newNodes = [];
   for (final node in oldNodes) {
     if (node is JsonString && node.address == address) {
       newNodes.add(JsonString(node.address, values));
-    } else if (node is JsonObject) {
+    } else if (node is JsonObject && node.address.indexed.every((e) => e.$2 == tail[e.$1])) {
       newNodes.add(
           JsonObject(setValue(node.children, address, values), node.address));
     } else {

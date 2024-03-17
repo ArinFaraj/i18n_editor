@@ -11,6 +11,7 @@ import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/home/widget/menu_entry.dart';
+import 'package:i18n_editor/home/widget/new_key_dialog.dart';
 
 class HomeMenuBar extends ConsumerStatefulWidget {
   const HomeMenuBar({
@@ -73,6 +74,7 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
 
   List<MenuEntry> _getMenus() {
     final recentProjects = ref.watch(recentProjectsProvider).requireValue;
+    final keysLoaded = ref.watch(keysProvider).valueOrNull != null;
     final List<MenuEntry> result = <MenuEntry>[
       MenuEntry(
         label: 'File',
@@ -81,8 +83,7 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
             label: 'Save Files',
             shortcut:
                 const SingleActivator(LogicalKeyboardKey.keyS, control: true),
-            onPressed: ref.watch(modifiedNodesProvider).isEmpty ||
-                    ref.watch(keysProvider).valueOrNull == null
+            onPressed: ref.watch(modifiedNodesProvider).isEmpty || !keysLoaded
                 ? null
                 : () async {
                     await ref.read(keysProvider.notifier).saveFiles();
@@ -150,6 +151,21 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
           ),
         ],
       ),
+      MenuEntry(
+        label: 'Edit',
+        menuChildren: <MenuEntry>[
+          MenuEntry(
+            label: 'Add Key',
+            shortcut:
+                const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+            onPressed: keysLoaded
+                ? () {
+                    showNewKeyDialog(context);
+                  }
+                : null,
+          ),
+        ],
+      )
     ];
     _shortcutsEntry?.dispose();
     _shortcutsEntry =
