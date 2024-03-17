@@ -6,17 +6,17 @@ import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:riverpod/riverpod.dart';
 
-typedef I18nFile = (String path, Map<String, dynamic> content);
+typedef FileData = MapEntry<String, Map<String, dynamic>>;
+typedef Files = Map<String, Map<String, dynamic>>;
 
-final filesNotifierProvider =
-    AsyncNotifierProvider<FilesNotifier, List<I18nFile>?>(
+final filesNotifierProvider = AsyncNotifierProvider<FilesNotifier, Files?>(
   FilesNotifier.new,
   name: 'filesNotifier',
 );
 
-class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
+class FilesNotifier extends AsyncNotifier<Files?> {
   @override
-  Future<List<I18nFile>?> build() async {
+  Future<Files?> build() async {
     final projectPath = ref.watch(projectManagerProvider);
     if (projectPath == null) {
       return null;
@@ -31,8 +31,8 @@ class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
     return files;
   }
 
-  Future<List<I18nFile>?> _getFiles(String projectPath, String prefix) async {
-    final completer = Completer<List<I18nFile>>();
+  Future<Files?> _getFiles(String projectPath, String prefix) async {
+    final completer = Completer<Files>();
 
     final dir = Directory(projectPath);
     final files = <String>[];
@@ -44,12 +44,12 @@ class FilesNotifier extends AsyncNotifier<List<I18nFile>?> {
         files.add(event.path);
       }
     }, onDone: () async {
-      final finalfiles = <(String, Map<String, dynamic>)>[];
+      final finalfiles = <String, Map<String, dynamic>>{};
       for (final file in files) {
         final fileContent = await File(file).readAsString();
         final fileJson = json.decode(fileContent) as Map<String, dynamic>;
         // final nodes = extractNodes(fileJson);
-        finalfiles.add((file, fileJson));
+        finalfiles[file] = fileJson;
       }
       completer.complete(finalfiles);
     });

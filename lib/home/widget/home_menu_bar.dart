@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
+import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
@@ -71,6 +72,7 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
   }
 
   List<MenuEntry> _getMenus() {
+    final recentProjects = ref.watch(recentProjectsProvider).requireValue;
     final List<MenuEntry> result = <MenuEntry>[
       MenuEntry(
         label: 'File',
@@ -87,6 +89,17 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
                   },
           ),
           MenuEntry(
+            label: 'Reload Files',
+            shortcut:
+                const SingleActivator(LogicalKeyboardKey.keyR, control: true),
+            onPressed: ref.watch(keysProvider).valueOrNull == null
+                ? null
+                : () async {
+                    ref.invalidate(keysProvider);
+                    ref.invalidate(filesNotifierProvider);
+                  },
+          ),
+          MenuEntry(
             label: 'Open Folder',
             shortcut:
                 const SingleActivator(LogicalKeyboardKey.keyO, control: true),
@@ -97,18 +110,27 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
             },
           ),
           // recent projects
-          MenuEntry(label: 'Recent Projects', menuChildren: [
-            for (final project
-                in ref.watch(recentProjectsProvider).requireValue)
-              MenuEntry(
-                label: project,
-                onPressed: () {
-                  ref
-                      .read(projectManagerProvider.notifier)
-                      .openProject(project);
-                },
-              ),
-          ]),
+          MenuEntry(
+            label: 'Recent Projects',
+            menuChildren: [
+              for (int i = 0; i < recentProjects.length; i++)
+                MenuEntry(
+                  label: recentProjects[i],
+                  shortcut: i == 0
+                      ? const SingleActivator(LogicalKeyboardKey.digit1,
+                          control: true)
+                      : i == 1
+                          ? const SingleActivator(LogicalKeyboardKey.digit2,
+                              control: true)
+                          : null,
+                  onPressed: () {
+                    ref
+                        .read(projectManagerProvider.notifier)
+                        .openProject(recentProjects[i]);
+                  },
+                ),
+            ],
+          ),
           MenuEntry(
             label: 'About',
             onPressed: () {

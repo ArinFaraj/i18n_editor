@@ -4,14 +4,14 @@ import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 
 Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
+  if (nodes.first case JsonObject(address: const [])) {
+    return buildKeyTree((nodes.first as JsonObject).children, ref);
+  }
   return ListView.builder(
     shrinkWrap: true,
     itemCount: nodes.length,
     itemBuilder: (context, index) {
       final node = nodes[index];
-      if (node case JsonObject(address: const [])) {
-        return buildKeyTree(node.children, ref);
-      }
 
       return Stack(
         children: [
@@ -27,18 +27,21 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
                 title: Padding(
                   padding: EdgeInsets.only(left: depth * 16),
                   child: Badge(
-                    isLabelVisible: ref
-                        .watch(modifiedNodesProvider)
-                        .containsKey(node_.address),
+                    isLabelVisible: (ref
+                                .watch(modifiedNodesProvider)[node_.address]
+                                ?.length ??
+                            0) >
+                        0,
                     child: Text(
                       node_.address.last.toString(),
                     ),
                   ),
                 ),
-                selected: ref.watch(selectedNode)?.address == node_.address,
+                selected: ref.watch(selectedAddressProvider) == node_.address,
                 dense: true,
                 onTap: () {
-                  ref.read(selectedNode.notifier).state = node_;
+                  ref.read(selectedAddressProvider.notifier).state =
+                      node_.address;
                 },
               ),
             JsonObject node_ => ExpansionTile(

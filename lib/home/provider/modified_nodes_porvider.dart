@@ -21,4 +21,13 @@ class ModifiedNodesNotifier extends Notifier<Map<List<dynamic>, List<String>>> {
       address: {...currentlyModifierFilesOfAddress, ...changedFiles}.toList()
     };
   }
+
+  void remove({required List address, required List<String> changedFiles}) {
+    final currentlyModifierFilesOfAddress = state[address] ?? [];
+    state = {
+      ...state,
+      address: [...currentlyModifierFilesOfAddress]
+        ..removeWhere((element) => changedFiles.contains(element))
+    };
+  }
 }

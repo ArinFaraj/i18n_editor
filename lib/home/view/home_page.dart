@@ -22,7 +22,7 @@ class HomePage extends ConsumerWidget {
     });
 
     final keys = ref.watch(keysProvider);
-    final selectedNode_ = ref.watch(selectedNode);
+    final selectedNode = ref.watch(selectedNodeProvider).value;
 
     return Scaffold(
       body: Column(
@@ -40,20 +40,22 @@ class HomePage extends ConsumerWidget {
                       Expanded(
                         child: keys.when(
                           skipLoadingOnRefresh: true,
-                          data: (key_) => key_ == null
+                          data: (nodes) => nodes == null
                               ? const Padding(
                                   padding: EdgeInsets.all(8.0),
                                   child: Text('empty'),
                                 )
-                              : buildKeyTree(key_, ref),
+                              : buildKeyTree(nodes, ref),
                           error: (e, s) => Text('$e\n$s'),
-                          loading: () => const CircularProgressIndicator(),
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
                       ),
                       const VerticalDivider(),
                       Expanded(
                         flex: 2,
-                        child: selectedNode_ == null
+                        child: selectedNode == null
                             ? const Center(child: Text('Select a key to edit'))
                             : const Editor(),
                       ),

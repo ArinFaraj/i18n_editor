@@ -15,26 +15,27 @@ class Editor extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final baseFile = ref.watch(
-    //     i18nConfigsProvider.select((data) => data.valueOrNull?.defaultLocale));
-
-    final baseLocaleJson = ref.watch(baseLocaleJsonProvider);
     final files = ref.watch(filesNotifierProvider);
 
-    if (baseLocaleJson.valueOrNull == null || files.valueOrNull == null) {
+    if (files.valueOrNull == null) {
       return const CircularProgressIndicator();
     }
 
     final baseLocalePath = ref.watch(baseLocalePathProvider);
+    final selectedNode_ = ref.watch(selectedNodeProvider);
+    var selected = selectedNode_.value;
+    if (selected == null) return const LinearProgressIndicator();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LocaleKeyEditor(
-          file: (baseLocalePath.requireValue!, baseLocaleJson.requireValue!),
+          selectedNode: selected,
+          file: baseLocalePath.value!,
         ),
-        for (final file in files.requireValue!)
+        for (final file in files.requireValue!.keys)
           LocaleKeyEditor(
+            selectedNode: selected,
             file: file,
           ),
       ],
@@ -46,24 +47,26 @@ class LocaleKeyEditor extends HookConsumerWidget {
   const LocaleKeyEditor({
     super.key,
     required this.file,
+    required this.selectedNode,
   });
-  final I18nFile file;
+  final String file;
+  final JsonString selectedNode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final _debouncer = Debouncer(milliseconds: 100);
-    final selectedNode_ = ref.watch(selectedNode)!;
-    final value = selectedNode_.values[file.$1];
-    final textController = useTextEditingController(text: value);
+    final debouncer = Debouncer(milliseconds: 100);
+    final value = selectedNode.values[file];
     final isModified = ref
-            .watch(modifiedNodesProvider)[selectedNode_.address]
-            ?.contains(file.$1) ??
+            .watch(modifiedNodesProvider)[selectedNode.address]
+            ?.contains(file) ??
         false;
+    final textController = useTextEditingController(text: value);
+    final focusNode = useFocusNode();
 
     useEffect(() {
-      textController.text = value ?? '';
+      if (!focusNode.hasFocus) textController.text = value ?? '';
       return null;
-    }, [value]);
+    }, [value, focusNode]);
 
     final direction = useState(TextDirection.ltr);
 
@@ -86,20 +89,32 @@ class LocaleKeyEditor extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(extractBaseName(file.$1)),
+            Text(extractBaseName(file)),
             const SizedBox(height: 8),
             Directionality(
               textDirection: direction.value,
               child: TextField(
+                focusNode: focusNode,
                 controller: textController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  border: null,
+                  suffix: isModified
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            focusNode.unfocus();
+                            ref
+                                .read(keysProvider.notifier)
+                                .resetNode(selectedNode, file);
+                          },
+                        )
+                      : null,
                 ),
                 onChanged: (value) {
-                  _debouncer.run(() {
+                  debouncer.run(() {
                     ref
                         .read(keysProvider.notifier)
-                        .updateSelectedNode(file.$1, value);
+                        .updateSelectedNode(file, value);
                   });
                 },
               ),

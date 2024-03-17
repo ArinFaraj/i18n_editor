@@ -7,9 +7,15 @@ import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:riverpod/riverpod.dart';
 
-final selectedNode = StateProvider<JsonString?>(
-  (ref) => null,
+final selectedNodeProvider = FutureProvider<JsonString?>(
+  (ref) async => getNode(
+      await ref.watch(keysProvider.future), ref.watch(selectedAddressProvider)),
   name: 'selectedNode',
+);
+
+final selectedAddressProvider = StateProvider<List<dynamic>?>(
+  (ref) => null,
+  name: 'selectedAddressProvider',
 );
 
 final keysProvider = AsyncNotifierProvider<KeysNotifier, List<Node>?>(
@@ -42,11 +48,11 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
         .add(address: node.address, changedFiles: node.values.keys.toList());
   }
 
-  void updateSelectedNode(String file, String value) {
+  Future<void> updateSelectedNode(String file, String value) async {
     if (state.value == null) return;
-    final selectedNode_ = ref.read(selectedNode);
+    final selectedNode_ = await ref.read(selectedNodeProvider.future);
     if (selectedNode_ == null) return;
-    final node = selectedNode_.updateKey(file, value);
+    final node = selectedNode_.updateFileValue(file, value);
 
     state = AsyncData(
       setValue(state.value!, node.address, node.values),
@@ -61,9 +67,7 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
     final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
     if (baseLocalePath == null) return;
 
-    final files = (await ref.read(filesNotifierProvider.future))
-        ?.map((e) => e.$1)
-        .toList();
+    final files = (await ref.read(filesNotifierProvider.future))?.keys.toList();
     if (files == null) return;
     files.insert(0, baseLocalePath);
     final data = state.value;
@@ -108,6 +112,26 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
 
     ref.invalidate(modifiedNodesProvider);
   }
+
+  void resetNode(JsonString node, String file) {
+    if (state.value == null) return;
+    final files = ref.read(filesNotifierProvider).value;
+    if (files == null) return;
+    final data = files[file];
+    if (data == null) return;
+
+    final original = getValue(data, node.address);
+    final newValue = node.updateFileValue(file, original);
+
+    state = AsyncData(
+      setValue(state.value!, node.address, newValue.values),
+    );
+
+    ref.read(modifiedNodesProvider.notifier).remove(
+      address: node.address,
+      changedFiles: [file],
+    );
+  }
 }
 
 sealed class Node {
@@ -124,9 +148,9 @@ class JsonString extends Node {
     return JsonString(address, values ?? this.values);
   }
 
-  JsonString updateKey(String key, String? value) {
+  JsonString updateFileValue(String file, String? value) {
     return copyWith(
-      values: Map.from(values)..[key] = value,
+      values: Map.from(values)..[file] = value,
     );
   }
 }
@@ -139,7 +163,7 @@ class JsonObject extends Node {
 List<Node> extractAllNodes(
   String baseLocalePath,
   dynamic json,
-  List<I18nFile> otherFiles,
+  Files otherFiles,
 ) {
   List<Node> extractNodes(dynamic json, [List<dynamic> path = const []]) {
     final nodes = <Node>[];
@@ -157,8 +181,12 @@ List<Node> extractAllNodes(
         nodes.addAll(extractNodes(json[i], newPath));
       }
     } else {
-      final values = Map.fromEntries(
-          otherFiles.map((file) => MapEntry(file.$1, getValue(file.$2, path))));
+      final values = otherFiles.map(
+        (file, data) => MapEntry(
+          file,
+          getValue(data, path),
+        ),
+      );
       values[baseLocalePath] = json;
 
       nodes.add(JsonString(path, values));
@@ -198,4 +226,17 @@ List<Node> setValue(
     }
   }
   return newNodes;
+}
+
+JsonString? getNode(List<Node>? nodes, List<dynamic>? address) {
+  if (address == null || nodes == null) return null;
+  for (final node in nodes) {
+    if (node is JsonString && node.address == address) {
+      return node;
+    } else if (node is JsonObject) {
+      final result = getNode(node.children, address);
+      if (result != null) return result;
+    }
+  }
+  return null;
 }
