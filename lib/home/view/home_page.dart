@@ -29,6 +29,7 @@ class HomePage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const HomeMenuBar(),
+          const Divider(height: 1),
           Expanded(
             child: (ref.watch(projectManagerProvider) == null)
                 ? const Center(
@@ -52,12 +53,15 @@ class HomePage extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const VerticalDivider(),
+                      const VerticalDivider(width: 1),
                       Expanded(
                         flex: 2,
                         child: selectedNode == null
                             ? const Center(child: Text('Select a key to edit'))
-                            : const Editor(),
+                            : const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Editor(),
+                              ),
                       ),
                     ],
                   ),

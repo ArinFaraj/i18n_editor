@@ -33,42 +33,40 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Row(
-        children: [
-          const SizedBox(width: 8),
-          Icon(
-            Icons.language,
-            size: 18,
-            color: Theme.of(context).colorScheme.primary,
+    return Row(
+      children: [
+        const SizedBox(width: 8),
+        Icon(
+          Icons.language,
+          size: 18,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(width: 6),
+        MenuBar(
+          style: const MenuStyle(
+            elevation: MaterialStatePropertyAll(0.0),
+            backgroundColor: MaterialStatePropertyAll(Colors.transparent),
           ),
-          const SizedBox(width: 6),
-          MenuBar(
-            style: const MenuStyle(
-              elevation: MaterialStatePropertyAll(0.0),
-              backgroundColor: MaterialStatePropertyAll(Colors.transparent),
-            ),
-            children: MenuEntry.build(_getMenus()),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Center(
-              child: Text(
-                ref.watch(projectManagerProvider) ?? 'No Project Opened',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          Center(
+          children: MenuEntry.build(_getMenus()),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Center(
             child: Text(
-              ref.watch(i18nConfigsProvider).value?.toString() ??
-                  'No i18n Configs Loaded',
+              ref.watch(projectManagerProvider) ?? 'No Project Opened',
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 16),
-        ],
-      ),
+        ),
+        Center(
+          child: Text(
+            ref.watch(i18nConfigsProvider).value?.toString() ??
+                'No i18n Configs Loaded',
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(width: 16),
+      ],
     );
   }
 

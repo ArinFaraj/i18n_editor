@@ -29,6 +29,10 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
             ),
           switch (node) {
             JsonString node_ => ListTile(
+                selectedTileColor: Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer
+                    .withOpacity(0.3),
                 title: Padding(
                   padding: EdgeInsets.only(left: depth * 16),
                   child: Badge(
