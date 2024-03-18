@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:riverpod/riverpod.dart';
@@ -44,14 +45,16 @@ class FilesNotifier extends AsyncNotifier<Files?> {
         files.add(event.path);
       }
     }, onDone: () async {
-      final finalfiles = <String, Map<String, dynamic>>{};
+      final contentOfFiles = <String, Map<String, dynamic>>{};
+
       for (final file in files) {
         final fileContent = await File(file).readAsString();
         final fileJson = json.decode(fileContent) as Map<String, dynamic>;
         // final nodes = extractNodes(fileJson);
-        finalfiles[file] = fileJson;
+        contentOfFiles[basename(file)] = fileJson;
       }
-      completer.complete(finalfiles);
+
+      completer.complete(contentOfFiles);
     });
 
     return completer.future;

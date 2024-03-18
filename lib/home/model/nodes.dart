@@ -17,6 +17,11 @@ class JsonString extends Node {
       values: Map.from(values)..[file] = value,
     );
   }
+
+  @override
+  String toString() {
+    return 'JsonStr{$address, $values}';
+  }
 }
 
 class JsonObject extends Node {

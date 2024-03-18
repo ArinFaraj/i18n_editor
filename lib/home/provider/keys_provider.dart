@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:i18n_editor/home/model/nodes.dart';
-import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
+import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
+import 'package:i18n_editor/home/provider/project_manager.dart';
+import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
 final selectedNodeProvider = FutureProvider<JsonString?>(
@@ -21,18 +23,18 @@ final selectedAddressProvider = StateProvider<List<dynamic>?>(
 
 final keysProvider = AsyncNotifierProvider<KeysNotifier, List<Node>?>(
   KeysNotifier.new,
-  name: 'baseLocaleKeys',
+  name: 'keys',
 );
 
 class KeysNotifier extends AsyncNotifier<List<Node>?> {
   @override
   Future<List<Node>?> build() async {
-    final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
-    if (baseLocalePath == null) return null;
+    final configs = await ref.watch(i18nConfigsProvider.future);
+    if (configs == null) return null;
     final files = await ref.watch(filesNotifierProvider.future);
     if (files == null) return null;
 
-    return extractAllNodes(baseLocalePath, files);
+    return extractAllNodes('${configs.filePrefix}.json', files);
   }
 
   void updateNode(JsonString node) {
@@ -78,12 +80,11 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
   }
 
   Future<void> saveFiles() async {
-    final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
-    if (baseLocalePath == null) return;
+    final projectPath = ref.watch(projectManagerProvider);
+    if (projectPath == null) return;
 
     final files = (await ref.read(filesNotifierProvider.future))?.keys.toList();
     if (files == null) return;
-    files.insert(0, baseLocalePath);
     final data = state.value;
     if (data == null) return;
     const encoder = JsonEncoder.withIndent('  ');
@@ -97,13 +98,13 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
       } else if (json is JsonString) {
         for (final file in files) {
           final content = json.values[file];
-          final path = json.address;
+          final address = json.address;
 
           if (content != null) {
             filesData[file] = filesData[file] ?? {};
             dynamic current = filesData[file]!;
-            for (final key in path) {
-              if (key == path.last) {
+            for (final key in address) {
+              if (key == address.last) {
                 current[key] = content;
               } else {
                 current[key] = current[key] ?? {};
@@ -121,7 +122,7 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
 
     for (final MapEntry(key: path, value: content) in filesData.entries) {
       final stringContent = encoder.convert(content);
-      await File(path).writeAsString(stringContent);
+      await File(join(projectPath, path)).writeAsString(stringContent);
     }
 
     ref.invalidate(modifiedNodesProvider);
