@@ -205,7 +205,10 @@ String? getValue(Map<String, dynamic> json, List<dynamic> address) {
 }
 
 List<Node> setValue(
-    List<Node> oldNodes, List<dynamic> address, Map<String, String?> values) {
+  List<Node> oldNodes,
+  List<dynamic> address,
+  Map<String, String?> values,
+) {
   // final key = address.last;
   final tail = address.sublist(0, address.length - 1);
 

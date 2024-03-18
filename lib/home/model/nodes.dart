@@ -22,6 +22,17 @@ class JsonString extends Node {
   String toString() {
     return 'JsonStr{$address, $values}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JsonString &&
+          runtimeType == other.runtimeType &&
+          address == other.address &&
+          values == other.values;
+
+  @override
+  int get hashCode => address.hashCode ^ values.hashCode;
 }
 
 class JsonObject extends Node {
