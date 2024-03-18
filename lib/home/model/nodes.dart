@@ -6,15 +6,15 @@ sealed class Node extends Equatable {
   final List<dynamic> address;
 }
 
-class JsonString extends Node {
-  const JsonString(super.address, this.values);
+class Leaf extends Node {
+  const Leaf(super.address, this.values);
   final Map<String, String?> values;
 
-  JsonString copyWith({Map<String, String?>? values}) {
-    return JsonString(address, values ?? this.values);
+  Leaf copyWith({Map<String, String?>? values}) {
+    return Leaf(address, values ?? this.values);
   }
 
-  JsonString updateFileValue(String file, String? value) {
+  Leaf updateFileValue(String file, String? value) {
     return copyWith(
       values: Map.from(values)..[file] = value,
     );
@@ -22,15 +22,15 @@ class JsonString extends Node {
 
   @override
   String toString() {
-    return 'JsonStr{$address, $values}';
+    return 'Leaf{$address, $values}';
   }
 
   @override
   List<Object?> get props => [address, values];
 }
 
-class JsonObject extends Node {
-  const JsonObject(this.children, super.address);
+class Parent extends Node {
+  const Parent(this.children, super.address);
   final List<Node> children;
 
   @override

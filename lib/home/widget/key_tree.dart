@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
-import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
+import 'package:i18n_editor/home/provider/selected_node.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
 
 Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
   if (depth == 0) {
-    if (nodes.first case JsonObject(address: const [])) {
-      return buildKeyTree((nodes.first as JsonObject).children, ref);
+    if (nodes.first case Parent(address: const [])) {
+      return buildKeyTree((nodes.first as Parent).children, ref);
     }
   }
 
@@ -28,7 +28,7 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
               child: const VerticalDivider(width: 0),
             ),
           switch (node) {
-            JsonString node_ => ListTile(
+            Leaf node_ => ListTile(
                 selectedTileColor: Theme.of(context)
                     .colorScheme
                     .secondaryContainer
@@ -53,7 +53,7 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
                       node_.address;
                 },
               ),
-            JsonObject node_ => ExpansionTile(
+            Parent node_ => ExpansionTile(
                 initiallyExpanded: true,
                 dense: true,
                 trailing: IconButton(

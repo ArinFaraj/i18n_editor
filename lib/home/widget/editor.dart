@@ -5,6 +5,7 @@ import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
+import 'package:i18n_editor/home/provider/selected_node.dart';
 import 'package:i18n_editor/utils.dart';
 
 class Editor extends HookConsumerWidget {
@@ -46,7 +47,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
     required this.node,
   });
   final String filePath;
-  final JsonString node;
+  final Leaf node;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
