@@ -17,7 +17,7 @@ class Editor extends HookConsumerWidget {
     final files = ref.watch(filesNotifierProvider);
 
     if (files.valueOrNull == null) {
-      return const CircularProgressIndicator();
+      return const Center(child: CircularProgressIndicator());
     }
 
     final selectedNode_ = ref.watch(selectedNodeProvider);
