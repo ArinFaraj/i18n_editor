@@ -95,6 +95,8 @@ String extractBaseName(String path) {
   return parts[parts.length - 1];
 }
 
-bool isRTL(String text) {
-  return intl.Bidi.detectRtlDirectionality(text);
+TextDirection isRTL(String text) {
+  final rtl = intl.Bidi.detectRtlDirectionality(text);
+
+  return rtl ? TextDirection.rtl : TextDirection.ltr;
 }

@@ -16,7 +16,8 @@ class Editor extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final files = ref.watch(filesNotifierProvider);
 
-    if (files.valueOrNull == null) {
+    final filesValue = files.valueOrNull;
+    if (filesValue == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -24,15 +25,16 @@ class Editor extends HookConsumerWidget {
     var selected = selectedNode_.value;
     if (selected == null) return const LinearProgressIndicator();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final file in files.requireValue!.keys)
-          LocaleKeyEditor(
-            selectedNode: selected,
-            file: file,
-          ),
-      ],
+    return ListView.builder(
+      itemCount: filesValue.length,
+      itemBuilder: (context, index) {
+        final file = filesValue.keys.elementAt(index);
+
+        return LocaleKeyEditor(
+          node: selected,
+          filePath: file,
+        );
+      },
     );
   }
 }
@@ -40,34 +42,35 @@ class Editor extends HookConsumerWidget {
 class LocaleKeyEditor extends HookConsumerWidget {
   const LocaleKeyEditor({
     super.key,
-    required this.file,
-    required this.selectedNode,
+    required this.filePath,
+    required this.node,
   });
-  final String file;
-  final JsonString selectedNode;
+  final String filePath;
+  final JsonString node;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final debouncer = useRef(Debouncer(milliseconds: 50));
-    final value = selectedNode.values[file];
-    final isModified = ref
-            .watch(modifiedNodesProvider)[selectedNode.address]
-            ?.contains(file) ??
-        false;
+    final modifiedFilesOfNode = ref.watch(modifiedNodesProvider)[node.address];
+    final isModified = modifiedFilesOfNode?.contains(filePath) ?? false;
+
+    final value = node.values[filePath];
     final textController = useTextEditingController(text: value);
     final focusNode = useFocusNode();
+
+    final debouncer = useRef(
+      Debouncer(milliseconds: 50),
+    );
 
     useEffect(() {
       if (!focusNode.hasFocus) textController.text = value ?? '';
       return null;
     }, [value, focusNode]);
 
-    final direction = useState(TextDirection.ltr);
+    final direction = useState(isRTL(textController.text));
 
     useEffect(() {
       void updateDirection() {
-        direction.value =
-            isRTL(textController.text) ? TextDirection.rtl : TextDirection.ltr;
+        direction.value = isRTL(textController.text);
       }
 
       textController.addListener(updateDirection);
@@ -83,7 +86,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(extractBaseName(file)),
+            Text(extractBaseName(filePath)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -110,7 +113,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         debouncer.value.run(() {
                           ref
                               .read(keysProvider.notifier)
-                              .updateSelectedNode(file, value);
+                              .updateSelectedNode(filePath, value);
                         });
                       },
                     ),
@@ -125,7 +128,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         focusNode.unfocus();
                         ref
                             .read(keysProvider.notifier)
-                            .resetNode(selectedNode, file);
+                            .resetNode(node, filePath);
                       },
                     ),
                   ),
