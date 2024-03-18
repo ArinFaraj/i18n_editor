@@ -185,6 +185,20 @@ Parent extractNodes(
   return extractNode(baseJson) as Parent;
 }
 
+Leaf? getLeaf(Node node, List<dynamic> address) {
+  if (node is Leaf && listEquals(node.address, address)) {
+    return node;
+  } else if (node is Parent) {
+    Leaf? result;
+    for (final child in node.children) {
+      result = getLeaf(child, address);
+      if (result != null) return result;
+    }
+  }
+
+  return null;
+}
+
 Node setLeafValue(
   Node? oldNode,
   List<dynamic> address,
@@ -212,18 +226,4 @@ Node setLeafValue(
   }
 
   return newNode;
-}
-
-Leaf? getLeaf(Node node, List<dynamic> address) {
-  if (node is Leaf && listEquals(node.address, address)) {
-    return node;
-  } else if (node is Parent) {
-    Leaf? result;
-    for (final child in node.children) {
-      result = getLeaf(child, address);
-      if (result != null) return result;
-    }
-  }
-
-  return null;
 }
