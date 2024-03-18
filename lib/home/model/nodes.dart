@@ -1,4 +1,6 @@
-sealed class Node {
+import 'package:equatable/equatable.dart';
+
+sealed class Node extends Equatable {
   const Node(this.address);
 
   final List<dynamic> address;
@@ -24,18 +26,13 @@ class JsonString extends Node {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is JsonString &&
-          runtimeType == other.runtimeType &&
-          address == other.address &&
-          values == other.values;
-
-  @override
-  int get hashCode => address.hashCode ^ values.hashCode;
+  List<Object?> get props => [address, values];
 }
 
 class JsonObject extends Node {
   const JsonObject(this.children, super.address);
   final List<Node> children;
+
+  @override
+  List<Object?> get props => [children, address];
 }
