@@ -9,7 +9,7 @@ void main() {
         Leaf(['address1'], {'file1': 'value1'}),
       ], []);
 
-      final newValues = setJsonStringValue(
+      final newValues = setLeafValue(
         nodes,
         ['address1'],
         {'file1': 'value2'},
@@ -33,7 +33,7 @@ void main() {
         ),
       ], []);
 
-      final newValues = setJsonStringValue(
+      final newValues = setLeafValue(
         nodes,
         ['address2', 'address3'],
         {'file1': 'value4'},
@@ -56,7 +56,7 @@ void main() {
         Leaf(['address1'], {'file1': 'value1'}),
       ], []);
 
-      final newValues = setJsonStringValue(
+      final newValues = setLeafValue(
         nodes,
         ['address2'],
         {'file1': 'value2'},
@@ -80,7 +80,7 @@ void main() {
           ['address2'],
         ),
       ], []);
-      final newValues = setJsonStringValue(
+      final newValues = setLeafValue(
         nodes,
         ['address2', 'address3'],
         {'file1': 'value3'},
@@ -102,7 +102,7 @@ void main() {
       const nodes = Parent([
         Leaf(['address1'], {'file1': 'value1'}),
       ], []);
-      final newValues = setJsonStringValue(
+      final newValues = setLeafValue(
         nodes,
         ['address2', 'address1'],
         {'file1': 'value3'},

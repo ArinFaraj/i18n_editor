@@ -8,7 +8,7 @@ import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
-import 'package:i18n_editor/home/provider/selected_node.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -27,29 +27,31 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     final files = await ref.watch(filesNotifierProvider.future);
     if (files == null) return null;
 
-    return extractAllNodes('${configs.filePrefix}.json', files);
+    final baseLocalePath = '${configs.filePrefix}.json';
+
+    return extractAllNodes(baseLocalePath, files);
   }
 
-  void updateNode(Leaf node) {
+  void updateLeaf(Leaf leaf) {
     if (state.value == null) return;
 
     state = AsyncData(
-      setJsonStringValue(state.value!, node.address, node.values) as Parent,
+      setLeafValue(state.value!, leaf.address, leaf.values) as Parent,
     );
 
     ref
         .read(modifiedNodesProvider.notifier)
-        .add(address: node.address, changedFiles: node.values.keys.toList());
+        .add(address: leaf.address, changedFiles: leaf.values.keys.toList());
   }
 
-  void addEmptyNode(List<dynamic> address) {
+  void addEmptyLeaf(List<dynamic> address) {
     if (state.value == null) return;
-    final node = Leaf(
+    final leaf = Leaf(
       address,
       const {},
     );
     state = AsyncData(
-      setJsonStringValue(state.value!, address, node.values) as Parent,
+      setLeafValue(state.value!, address, leaf.values) as Parent,
     );
     ref.read(modifiedNodesProvider.notifier).add(
       address: address,
@@ -57,15 +59,16 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     );
   }
 
-  Future<void> updateSelectedNode(String file, String value) async {
+  Future<void> updateSelectedLeaf(String file, String value) async {
     if (state.value == null) return;
-    final selectedNode_ = await ref.read(selectedNodeProvider.future);
+    final selectedNode_ = await ref.read(selectedLeafProvider.future);
     if (selectedNode_ == null) return;
     final node = selectedNode_.updateFileValue(file, value);
 
     state = AsyncData(
-      setJsonStringValue(state.value!, node.address, node.values) as Parent,
+      setLeafValue(state.value!, node.address, node.values) as Parent,
     );
+
     ref.read(modifiedNodesProvider.notifier).add(
       address: selectedNode_.address,
       changedFiles: [file],
@@ -132,7 +135,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     final newValue = node.updateFileValue(file, original);
 
     state = AsyncData(
-      setJsonStringValue(state.value!, node.address, newValue.values) as Parent,
+      setLeafValue(state.value!, node.address, newValue.values) as Parent,
     );
 
     ref.read(modifiedNodesProvider.notifier).remove(
@@ -181,7 +184,7 @@ Parent extractAllNodes(
   return extractNodes(baseJson) as Parent;
 }
 
-Node setJsonStringValue(
+Node setLeafValue(
   Node? oldNode,
   List<dynamic> address,
   Map<String, String?> values,
@@ -200,8 +203,7 @@ Node setJsonStringValue(
             (e) => tail[e.$1] == e.$2,
           );
       if (beginsWithAddress) {
-        newNode.children[i] =
-            setJsonStringValue(child, address, values) as Parent;
+        newNode.children[i] = setLeafValue(child, address, values) as Parent;
 
         break;
       }
@@ -211,13 +213,13 @@ Node setJsonStringValue(
   return newNode;
 }
 
-Leaf? getNode(Node node, List<dynamic> address) {
+Leaf? getLeaf(Node node, List<dynamic> address) {
   if (node is Leaf && listEquals(node.address, address)) {
     return node;
   } else if (node is Parent) {
     Leaf? result;
     for (final child in node.children) {
-      result = getNode(child, address);
+      result = getLeaf(child, address);
       if (result != null) return result;
     }
   }

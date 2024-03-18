@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
-import 'package:i18n_editor/home/provider/selected_node.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/editor.dart';
 import 'package:i18n_editor/home/widget/home_menu_bar.dart';
 import 'package:i18n_editor/home/widget/key_tree.dart';
@@ -23,7 +23,7 @@ class HomePage extends ConsumerWidget {
     });
 
     final keys = ref.watch(keysProvider);
-    final selectedNode = ref.watch(selectedNodeProvider).value;
+    final selectedNode = ref.watch(selectedLeafProvider).value;
 
     return Scaffold(
       body: Column(

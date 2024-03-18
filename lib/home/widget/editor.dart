@@ -5,7 +5,7 @@ import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
-import 'package:i18n_editor/home/provider/selected_node.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/utils.dart';
 
 class Editor extends HookConsumerWidget {
@@ -22,7 +22,7 @@ class Editor extends HookConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final selectedNode_ = ref.watch(selectedNodeProvider);
+    final selectedNode_ = ref.watch(selectedLeafProvider);
     var selected = selectedNode_.value;
     if (selected == null) return const LinearProgressIndicator();
 
@@ -114,7 +114,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         debouncer.value.run(() {
                           ref
                               .read(keysProvider.notifier)
-                              .updateSelectedNode(filePath, value);
+                              .updateSelectedLeaf(filePath, value);
                         });
                       },
                     ),

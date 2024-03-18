@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
-import 'package:i18n_editor/home/provider/selected_node.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
 
 Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {

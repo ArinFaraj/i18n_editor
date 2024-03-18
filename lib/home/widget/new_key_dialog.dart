@@ -29,7 +29,7 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
             TextButton(
               onPressed: () {
                 try {
-                  ref.read(keysProvider.notifier).addEmptyNode(
+                  ref.read(keysProvider.notifier).addEmptyLeaf(
                         convertStringToAddress(controller.text),
                       );
                   Navigator.pop(context);
