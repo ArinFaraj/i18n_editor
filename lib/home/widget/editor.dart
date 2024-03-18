@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
-import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/utils.dart';
-import 'package:intl/intl.dart' as intl;
 
 class Editor extends HookConsumerWidget {
   const Editor({
@@ -22,7 +20,6 @@ class Editor extends HookConsumerWidget {
       return const CircularProgressIndicator();
     }
 
-    final baseLocalePath = ref.watch(baseLocalePathProvider);
     final selectedNode_ = ref.watch(selectedNodeProvider);
     var selected = selectedNode_.value;
     if (selected == null) return const LinearProgressIndicator();
@@ -30,10 +27,6 @@ class Editor extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LocaleKeyEditor(
-          selectedNode: selected,
-          file: baseLocalePath.value!,
-        ),
         for (final file in files.requireValue!.keys)
           LocaleKeyEditor(
             selectedNode: selected,
@@ -55,7 +48,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final debouncer = Debouncer(milliseconds: 100);
+    final debouncer = useRef(Debouncer(milliseconds: 50));
     final value = selectedNode.values[file];
     final isModified = ref
             .watch(modifiedNodesProvider)[selectedNode.address]
@@ -83,7 +76,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
 
     return Card(
       color: isModified
-          ? Theme.of(context).colorScheme.surface
+          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1)
           : Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -92,46 +85,55 @@ class LocaleKeyEditor extends HookConsumerWidget {
           children: [
             Text(extractBaseName(file)),
             const SizedBox(height: 8),
-            Directionality(
-              textDirection: direction.value,
-              child: TextField(
-                focusNode: focusNode,
-                controller: textController,
-                decoration: InputDecoration(
-                  border: null,
-                  suffix: isModified
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            focusNode.unfocus();
-                            ref
-                                .read(keysProvider.notifier)
-                                .resetNode(selectedNode, file);
-                          },
-                        )
-                      : null,
+            Row(
+              children: [
+                Expanded(
+                  child: Directionality(
+                    textDirection: direction.value,
+                    child: TextField(
+                      focusNode: focusNode,
+                      maxLines: null,
+                      controller: textController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceVariant
+                            .withOpacity(0.2),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide.none,
+                        ),
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        debouncer.value.run(() {
+                          ref
+                              .read(keysProvider.notifier)
+                              .updateSelectedNode(file, value);
+                        });
+                      },
+                    ),
+                  ),
                 ),
-                onChanged: (value) {
-                  debouncer.run(() {
-                    ref
-                        .read(keysProvider.notifier)
-                        .updateSelectedNode(file, value);
-                  });
-                },
-              ),
+                if (isModified)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        focusNode.unfocus();
+                        ref
+                            .read(keysProvider.notifier)
+                            .resetNode(selectedNode, file);
+                      },
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
-}
-
-String extractBaseName(String path) {
-  final parts = path.split(RegExp('[/\\\\]'));
-  return parts[parts.length - 1];
-}
-
-bool isRTL(String text) {
-  return intl.Bidi.detectRtlDirectionality(text);
 }

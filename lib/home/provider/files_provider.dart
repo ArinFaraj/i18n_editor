@@ -40,7 +40,7 @@ class FilesNotifier extends AsyncNotifier<Files?> {
 
     lister.listen((event) {
       if (event is File &&
-          RegExp('.*[\\\\/]$prefix.+\\.json').hasMatch(event.path)) {
+          RegExp('.*[\\\\/]$prefix.*\\.json').hasMatch(event.path)) {
         files.add(event.path);
       }
     }, onDone: () async {

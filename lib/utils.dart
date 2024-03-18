@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:yaml/yaml.dart';
+import 'package:intl/intl.dart' as intl;
 
 Future<Directory?> selectADirectory(BuildContext context) async {
   final result = await showDialog<Directory>(
@@ -87,4 +88,13 @@ class Debouncer {
     }
     _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
+}
+
+String extractBaseName(String path) {
+  final parts = path.split(RegExp('[/\\\\]'));
+  return parts[parts.length - 1];
+}
+
+bool isRTL(String text) {
+  return intl.Bidi.detectRtlDirectionality(text);
 }

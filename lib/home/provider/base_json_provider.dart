@@ -1,7 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:i18n_editor/home/provider/directory_watcher.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:path/path.dart';
@@ -22,25 +18,4 @@ final baseLocalePathProvider = FutureProvider(
     return baseLocalePath;
   },
   name: 'baseLocalePath',
-);
-
-final baseLocaleJsonProvider = FutureProvider<Map<String, dynamic>?>(
-  (ref) async {
-    final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
-    if (baseLocalePath == null) return null;
-
-    ref.listen(projectFolderWatcherProvider, (prev, next) {
-      next.whenData((value) {
-        final baseLocaleChanged = value?.path.contains(baseLocalePath) ?? false;
-
-        if (baseLocaleChanged) ref.invalidateSelf();
-      });
-    });
-    var fileContent = await File(baseLocalePath).readAsString();
-
-    final baseLocaleJson = jsonDecode(fileContent) as Map<String, dynamic>;
-
-    return baseLocaleJson;
-  },
-  name: 'baseLocaleJson',
 );

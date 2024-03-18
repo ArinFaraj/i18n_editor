@@ -153,23 +153,23 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
       ),
       MenuEntry(
         label: 'Edit',
-        menuChildren: <MenuEntry>[
+        menuChildren: [
           MenuEntry(
             label: 'Add Key',
-            shortcut:
-                const SingleActivator(LogicalKeyboardKey.keyN, control: true),
-            onPressed: keysLoaded
-                ? () {
-                    showNewKeyDialog(context);
-                  }
-                : null,
+            shortcut: const SingleActivator(
+              LogicalKeyboardKey.keyN,
+              control: true,
+            ),
+            onPressed: keysLoaded ? () => showNewKeyDialog(context) : null,
           ),
         ],
       )
     ];
+
     _shortcutsEntry?.dispose();
-    _shortcutsEntry =
-        ShortcutRegistry.of(context).addAll(MenuEntry.shortcuts(result));
+    _shortcutsEntry = ShortcutRegistry.of(context).addAll(
+      MenuEntry.shortcuts(result),
+    );
     return result;
   }
 }

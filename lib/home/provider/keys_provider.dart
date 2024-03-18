@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:collection/algorithms.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/base_json_provider.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
@@ -31,12 +29,10 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
   Future<List<Node>?> build() async {
     final baseLocalePath = await ref.watch(baseLocalePathProvider.future);
     if (baseLocalePath == null) return null;
-    final baseJson = await ref.watch(baseLocaleJsonProvider.future);
-    if (baseJson == null) return null;
-    final otherFiles = await ref.watch(filesNotifierProvider.future);
-    if (otherFiles == null) return null;
+    final files = await ref.watch(filesNotifierProvider.future);
+    if (files == null) return null;
 
-    return extractAllNodes(baseLocalePath, baseJson, otherFiles);
+    return extractAllNodes(baseLocalePath, files);
   }
 
   void updateNode(JsonString node) {
@@ -152,35 +148,37 @@ class KeysNotifier extends AsyncNotifier<List<Node>?> {
   }
 }
 
-
 List<Node> extractAllNodes(
   String baseLocalePath,
-  dynamic json,
-  Files otherFiles,
+  Files files,
 ) {
-  List<Node> extractNodes(dynamic json, [List<dynamic> path = const []]) {
+  final filescopy = Map<String, Map<String, dynamic>>.from(files);
+  final baseJson = filescopy.remove(baseLocalePath);
+
+  List<Node> extractNodes(dynamic jsonValue, [List<dynamic> path = const []]) {
     final nodes = <Node>[];
 
-    if (json is Map) {
+    if (jsonValue is Map) {
       final children = <Node>[];
-      json.forEach((key, value) {
+      jsonValue.forEach((key, value) {
         final newPath = [...path, key];
         children.addAll(extractNodes(value, newPath));
       });
       nodes.add(JsonObject(children, path));
-    } else if (json is List) {
-      for (int i = 0; i < json.length; i++) {
+    } else if (jsonValue is List) {
+      for (int i = 0; i < jsonValue.length; i++) {
         final newPath = [...path, i];
-        nodes.addAll(extractNodes(json[i], newPath));
+        nodes.addAll(extractNodes(jsonValue[i], newPath));
       }
     } else {
-      final values = otherFiles.map(
+      final values = filescopy.map(
         (file, data) => MapEntry(
           file,
           getValue(data, path),
         ),
       );
-      values[baseLocalePath] = json;
+
+      values[baseLocalePath] = jsonValue;
 
       nodes.add(JsonString(path, values));
     }
@@ -188,7 +186,7 @@ List<Node> extractAllNodes(
     return nodes;
   }
 
-  return extractNodes(json);
+  return extractNodes(baseJson);
 }
 
 String? getValue(Map<String, dynamic> json, List<dynamic> address) {
@@ -214,12 +212,21 @@ List<Node> setValue(
   for (final node in oldNodes) {
     if (node is JsonString && node.address == address) {
       newNodes.add(JsonString(node.address, values));
-    } else if (node is JsonObject && node.address.indexed.every((e) => e.$2 == tail[e.$1])) {
+      continue;
+    }
+
+    final beginsWithAddress = tail.length >= node.address.length &&
+        node.address.indexed.every(
+          (e) => tail[e.$1] == e.$2,
+        );
+
+    if (node is JsonObject && beginsWithAddress) {
       newNodes.add(
           JsonObject(setValue(node.children, address, values), node.address));
-    } else {
-      newNodes.add(node);
+      continue;
     }
+
+    newNodes.add(node);
   }
   return newNodes;
 }
