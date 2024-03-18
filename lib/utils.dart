@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:yaml/yaml.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:yaml/yaml.dart';
 
 Future<Directory?> selectADirectory(BuildContext context) async {
   final result = await showDialog<Directory>(
@@ -99,4 +99,18 @@ TextDirection isRTL(String text) {
   final rtl = intl.Bidi.detectRtlDirectionality(text);
 
   return rtl ? TextDirection.rtl : TextDirection.ltr;
+}
+
+String? getMapValue(Map<String, dynamic> json, List<dynamic> address) {
+  dynamic value = json;
+  for (final key in address) {
+    if (value is Map) {
+      value = value[key];
+    } else if (value is List) {
+      value = value[key];
+    } else {
+      return null;
+    }
+  }
+  return value;
 }

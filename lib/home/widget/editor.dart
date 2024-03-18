@@ -129,7 +129,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         focusNode.unfocus();
                         ref
                             .read(keysProvider.notifier)
-                            .resetNode(node, filePath);
+                            .resetLeafChanges(node, filePath);
                       },
                     ),
                   ),

@@ -9,6 +9,7 @@ import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/home/provider/selected_leaf.dart';
+import 'package:i18n_editor/utils.dart';
 import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -29,7 +30,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
 
     final baseLocalePath = '${configs.filePrefix}.json';
 
-    return extractAllNodes(baseLocalePath, files);
+    return extractNodes(baseLocalePath, files);
   }
 
   void updateLeaf(Leaf leaf) {
@@ -124,7 +125,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     ref.invalidate(modifiedNodesProvider);
   }
 
-  void resetNode(Leaf node, String file) {
+  void resetLeafChanges(Leaf node, String file) {
     if (state.value == null) return;
     final files = ref.read(filesNotifierProvider).value;
     if (files == null) return;
@@ -145,26 +146,26 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
   }
 }
 
-Parent extractAllNodes(
+Parent extractNodes(
   String baseLocalePath,
   Files files,
 ) {
   final filesCopy = Map<String, Map<String, dynamic>>.from(files);
   final baseJson = filesCopy.remove(baseLocalePath);
 
-  Node extractNodes(dynamic jsonValue, [List<dynamic> path = const []]) {
+  Node extractNode(dynamic jsonValue, [List<dynamic> path = const []]) {
     if (jsonValue is Map) {
       final children = <Node>[];
       jsonValue.forEach((key, value) {
         final newPath = [...path, key];
-        children.add(extractNodes(value, newPath));
+        children.add(extractNode(value, newPath));
       });
       return Parent(children, path);
     } else if (jsonValue is List) {
       final children = <Node>[];
       for (int i = 0; i < jsonValue.length; i++) {
         final newPath = [...path, i];
-        children.add(extractNodes(jsonValue[i], newPath));
+        children.add(extractNode(jsonValue[i], newPath));
       }
       return Parent(children, path);
     } else {
@@ -181,7 +182,7 @@ Parent extractAllNodes(
     }
   }
 
-  return extractNodes(baseJson) as Parent;
+  return extractNode(baseJson) as Parent;
 }
 
 Node setLeafValue(
@@ -225,18 +226,4 @@ Leaf? getLeaf(Node node, List<dynamic> address) {
   }
 
   return null;
-}
-
-String? getMapValue(Map<String, dynamic> json, List<dynamic> address) {
-  dynamic value = json;
-  for (final key in address) {
-    if (value is Map) {
-      value = value[key];
-    } else if (value is List) {
-      value = value[key];
-    } else {
-      return null;
-    }
-  }
-  return value;
 }
