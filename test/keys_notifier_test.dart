@@ -9,7 +9,7 @@ void main() {
         Leaf(['address1'], {'file1': 'value1'}),
       ], []);
 
-      final newValues = setLeafValue(
+      final newValues = setLeaf(
         nodes,
         ['address1'],
         {'file1': 'value2'},
@@ -33,7 +33,7 @@ void main() {
         ),
       ], []);
 
-      final newValues = setLeafValue(
+      final newValues = setLeaf(
         nodes,
         ['address2', 'address3'],
         {'file1': 'value4'},
@@ -56,7 +56,7 @@ void main() {
         Leaf(['address1'], {'file1': 'value1'}),
       ], []);
 
-      final newValues = setLeafValue(
+      final newValues = setLeaf(
         nodes,
         ['address2'],
         {'file1': 'value2'},
@@ -71,45 +71,8 @@ void main() {
       );
     });
     test('setValue add to child with existing parent', () {
-      const nodes = Parent([
-        Leaf(['address1'], {'file1': 'value1'}),
-        Parent(
-          [
-            Leaf(['address2', 'address1'], {'file1': 'value3'}),
-          ],
-          ['address2'],
-        ),
-      ], []);
-      final newValues = setLeafValue(
-        nodes,
-        ['address2', 'address3'],
-        {'file1': 'value3'},
-      );
-      expect(
-          newValues,
-          const Parent([
-            Leaf(['address1'], {'file1': 'value1'}),
-            Parent(
-              [
-                Leaf(['address2', 'address3'], {'file1': 'value3'}),
-              ],
-              ['address2'],
-            ),
-          ], []));
-    });
-
-    test('setValue add to child with non existing parent', () {
-      const nodes = Parent([
-        Leaf(['address1'], {'file1': 'value1'}),
-      ], []);
-      final newValues = setLeafValue(
-        nodes,
-        ['address2', 'address1'],
-        {'file1': 'value3'},
-      );
-      expect(
-        newValues,
-        const Parent([
+      const nodes = Parent(
+        [
           Leaf(['address1'], {'file1': 'value1'}),
           Parent(
             [
@@ -117,7 +80,58 @@ void main() {
             ],
             ['address2'],
           ),
-        ], []),
+        ],
+        [],
+      );
+      final newValues = setLeaf(
+        nodes,
+        ['address2', 'address3'],
+        {'file1': 'value3'},
+      );
+      expect(
+        newValues,
+        const Parent(
+          [
+            Leaf(['address1'], {'file1': 'value1'}),
+            Parent(
+              [
+                Leaf(['address2', 'address1'], {'file1': 'value3'}),
+                Leaf(['address2', 'address3'], {'file1': 'value3'}),
+              ],
+              ['address2'],
+            ),
+          ],
+          [],
+        ),
+      );
+    });
+
+    test('setValue add to child with non existing parent', () {
+      const nodes = Parent(
+        [
+          Leaf(['address1'], {'file1': 'value1'}),
+        ],
+        [],
+      );
+      final newValues = setLeaf(
+        nodes,
+        ['address2', 'address1'],
+        {'file1': 'value3'},
+      );
+      expect(
+        newValues,
+        const Parent(
+          [
+            Leaf(['address1'], {'file1': 'value1'}),
+            Parent(
+              [
+                Leaf(['address2', 'address1'], {'file1': 'value3'}),
+              ],
+              ['address2'],
+            ),
+          ],
+          [],
+        ),
       );
     });
   });
