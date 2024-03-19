@@ -1,123 +1,150 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
+import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 
-Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
-  if (depth == 0) {
-    if (nodes.first case Parent(address: const [])) {
-      return buildKeyTree((nodes.first as Parent).children, ref);
-    }
-  }
+class KeyTree extends HookConsumerWidget {
+  const KeyTree(this.nodes, {super.key});
+  final List<Node> nodes;
 
-  return ListView.builder(
-    shrinkWrap: true,
-    itemCount: nodes.length,
-    itemBuilder: (context, index) {
-      final node = nodes[index];
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final treeController = useRef(
+      TreeController(
+        roots: nodes,
+        childrenProvider: (node) => switch (node) {
+          Leaf _ => [],
+          Parent parent => parent.children,
+        },
+      ),
+    );
 
-      return Stack(
-        children: [
-          if (depth != 0)
-            Positioned(
-              top: 0,
-              left: depth * 18,
-              bottom: 0,
-              child: const VerticalDivider(width: 0),
-            ),
-          switch (node) {
-            Leaf node_ => ContextMenuRegion(
-                contextMenu: ContextMenu(
-                  entries: [
-                    // const MenuHeader(text: "Context Menu"),
-                    MenuItem(
-                      label: 'Delete Key',
-                      icon: Icons.delete,
-                      onSelected: () {
-                        ref.read(keysProvider.notifier).removeLeaf(
-                              node_.address,
-                            );
-                      },
-                    ),
-                    const MenuDivider(),
-                    MenuItem.submenu(
-                      label: 'Edit',
-                      icon: Icons.edit,
-                      items: [
-                        MenuItem(
-                          label: 'Undo',
-                          value: "Undo",
-                          icon: Icons.undo,
-                          onSelected: () {
-                            // implement undo
-                          },
-                        ),
-                        MenuItem(
-                          label: 'Redo',
-                          value: 'Redo',
-                          icon: Icons.redo,
-                          onSelected: () {
-                            // implement redo
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                  // position: const Offset(300, 300),
-                  padding: const EdgeInsets.all(8.0),
-                ),
-                child: ListTile(
-                  selectedTileColor: Theme.of(context)
-                      .colorScheme
-                      .secondaryContainer
-                      .withOpacity(0.3),
-                  title: Padding(
-                    padding: EdgeInsets.only(left: depth * 16),
-                    child: Badge(
-                      isLabelVisible: (ref
-                                  .watch(modifiedNodesProvider)[node_.address]
-                                  ?.length ??
-                              0) >
-                          0,
-                      child: Text(
-                        node_.address.last.toString(),
-                      ),
-                    ),
-                  ),
-                  selected: ref.watch(selectedAddressProvider) == node_.address,
-                  dense: true,
-                  onTap: () {
-                    ref.read(selectedAddressProvider.notifier).state =
-                        node_.address;
-                  },
-                ),
-              ),
-            Parent node_ => ExpansionTile(
-                initiallyExpanded: true,
-                dense: true,
-                trailing: IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
+    useEffect(
+      () {
+        treeController.value.expandAll();
+        return () => treeController.value.dispose();
+      },
+      [treeController],
+    );
+
+    useEffect(() {
+      treeController.value.roots = nodes;
+
+      return null;
+    }, [nodes]);
+
+    return AnimatedTreeView(
+      treeController: treeController.value,
+      curve: Curves.easeInOut,
+      nodeBuilder: (context, entry) {
+        final node_ = entry.node;
+        final isLeaf = node_ is Leaf;
+        final selected = ref.watch(selectedAddressProvider) == node_.address;
+
+        return ContextMenuRegion(
+          contextMenu: ContextMenu(
+            entries: [
+              // const MenuHeader(text: "Context Menu"),
+              if (!isLeaf)
+                MenuItem(
+                  label: 'Add Key',
+                  icon: Icons.add,
+                  onSelected: () {
                     showNewKeyDialog(context, node_.address);
                   },
                 ),
-                title: Padding(
-                  padding: EdgeInsets.only(left: depth * 16),
-                  child: Text(
-                    node_.address.last.toString(),
+              MenuItem(
+                label: 'Delete Key',
+                icon: Icons.delete,
+                onSelected: () {
+                  ref.read(keysProvider.notifier).removeLeaf(
+                        node_.address,
+                      );
+                },
+              ),
+              const MenuDivider(),
+              MenuItem.submenu(
+                label: 'Edit',
+                icon: Icons.edit,
+                items: [
+                  MenuItem(
+                    label: 'Undo',
+                    value: "Undo",
+                    icon: Icons.undo,
+                    onSelected: () {
+                      // implement undo
+                    },
                   ),
-                ),
-                children: [
-                  buildKeyTree(node_.children, ref, depth + 1),
+                  MenuItem(
+                    label: 'Redo',
+                    value: 'Redo',
+                    icon: Icons.redo,
+                    onSelected: () {
+                      // implement redo
+                    },
+                  ),
                 ],
               ),
-          },
-        ],
-      );
-    },
-  );
+            ],
+            // position: const Offset(300, 300),
+            padding: const EdgeInsets.all(8.0),
+          ),
+          child: Material(
+            color: selected
+                ? Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer
+                    .withOpacity(0.3)
+                : null,
+            child: InkWell(
+              splashColor: Theme.of(context).colorScheme.secondaryContainer,
+              highlightColor: Theme.of(context).colorScheme.secondaryContainer,
+              child: TreeIndentation(
+                entry: entry,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Badge(
+                    isLabelVisible: (ref
+                                .watch(modifiedNodesProvider)[node_.address]
+                                ?.length ??
+                            0) >
+                        0,
+                    child: Row(
+                      children: [
+                        isLeaf
+                            ? const Icon(Icons.arrow_right, size: 18)
+                            : entry.isExpanded
+                                ? Icon(Icons.folder_open, size: 18)
+                                : const Icon(Icons.folder, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            entry.node.address.last.toString(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              onTap: () {
+                if (isLeaf) {
+                  ref.read(selectedAddressProvider.notifier).state =
+                      node_.address;
+                } else {
+                  treeController.value.toggleExpansion(entry.node);
+                }
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

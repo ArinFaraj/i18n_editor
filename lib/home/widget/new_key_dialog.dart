@@ -8,12 +8,14 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
     context: context,
     builder: (context) {
       return HookConsumer(builder: (context, WidgetRef ref, child) {
-        final controller =
-            useTextEditingController(text: convertAddressToString(prefix));
+        final controller = useTextEditingController(
+          text: convertAddressToString(prefix),
+        );
 
         return AlertDialog(
           title: const Text('New Key'),
           content: TextField(
+            autofocus: true,
             controller: controller,
             decoration: const InputDecoration(
               labelText: 'Key',

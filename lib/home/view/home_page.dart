@@ -47,7 +47,7 @@ class HomePage extends ConsumerWidget {
                                   padding: EdgeInsets.all(8.0),
                                   child: Text('empty'),
                                 )
-                              : buildKeyTree(nodes.children, ref),
+                              : KeyTree(nodes.children),
                           error: (e, s) => Text('$e\n$s'),
                           loading: () => const Center(
                             child: CircularProgressIndicator(),
