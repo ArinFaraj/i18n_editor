@@ -120,7 +120,7 @@ class KeyTree extends HookConsumerWidget {
                         isLeaf
                             ? const Icon(Icons.arrow_right, size: 18)
                             : entry.isExpanded
-                                ? Icon(Icons.folder_open, size: 18)
+                                ? const Icon(Icons.folder_open, size: 18)
                                 : const Icon(Icons.folder, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
