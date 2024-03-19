@@ -37,7 +37,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     if (state.value == null) return;
 
     state = AsyncData(
-      setLeafValue(state.value!, leaf.address, leaf.values) as Parent,
+      setLeaf(state.value!, leaf.address, leaf.values),
     );
 
     ref
@@ -52,7 +52,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
       const {},
     );
     state = AsyncData(
-      setLeafValue(state.value!, address, leaf.values) as Parent,
+      setLeaf(state.value!, address, leaf.values),
     );
     ref.read(modifiedNodesProvider.notifier).add(
       address: address,
@@ -67,7 +67,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     final node = selectedNode_.updateFileValue(file, value);
 
     state = AsyncData(
-      setLeafValue(state.value!, node.address, node.values) as Parent,
+      setLeaf(state.value!, node.address, node.values),
     );
 
     ref.read(modifiedNodesProvider.notifier).add(
@@ -136,7 +136,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     final newValue = node.updateFileValue(file, original);
 
     state = AsyncData(
-      setLeafValue(state.value!, node.address, newValue.values) as Parent,
+      setLeaf(state.value!, node.address, newValue.values),
     );
 
     ref.read(modifiedNodesProvider.notifier).remove(
@@ -199,31 +199,76 @@ Leaf? getLeaf(Node node, List<dynamic> address) {
   return null;
 }
 
-Node setLeafValue(
-  Node? oldNode,
+// create a recursive method to copy the tree
+// and set the value of the leaf
+// if it exists, otherwise create a new leaf
+// setLeaf is not recursive
+// please generate a new inner method for the recursion
+
+Parent setLeaf(
+  Node oldNode,
   List<dynamic> address,
   Map<String, String?> values,
 ) {
-  assert(address.isNotEmpty);
-  final tail = address.sublist(0, address.length - 1);
-  Node newNode = oldNode ?? const Parent([], []);
-
-  if (newNode is Leaf && listEquals(newNode.address, address)) {
-    newNode = Leaf(newNode.address, values);
-  } else if (newNode is Parent) {
-    for (int i = 0; i < newNode.children.length; i++) {
-      final child = newNode.children[i];
-      final beginsWithAddress = tail.length >= child.address.length &&
-          child.address.indexed.every(
-            (e) => tail[e.$1] == e.$2,
-          );
-      if (beginsWithAddress) {
-        newNode.children[i] = setLeafValue(child, address, values) as Parent;
-
-        break;
-      }
+  // Helper function to create a new node (leaf or parent) with the given address and values.
+  Node createNewNode(List<dynamic> address, Map<String, String?> values,
+      List<dynamic> currentAddress) {
+    var index = currentAddress.length;
+    Node newNode = Leaf(address, values);
+    while (index < address.length - 1) {
+      newNode = Parent([newNode], address.sublist(0, index + 1));
+      index++;
     }
+    return newNode;
   }
 
-  return newNode;
+  // Helper function to recursively copy the tree and set/update the leaf.
+  Node setLeafRecursive(
+      Node node, List<dynamic> address, Map<String, String?> values) {
+    if (node is Leaf && node.address.equals(address)) {
+      // If the current node is the target leaf, update its values.
+      return node.copyWith(values: values);
+    } else if (node is Parent) {
+      // If the current node is a parent, recursively update its children.
+      var newChildren = <Node>[];
+      var found = false;
+      for (var child in node.children) {
+        if (address.startsWith(child.address)) {
+          found = true;
+          newChildren.add(setLeafRecursive(child, address, values));
+        } else {
+          newChildren.add(child);
+        }
+      }
+      // If the target leaf was not found in the children, create a new leaf or parent as needed.
+      if (!found) {
+        Node newNode = createNewNode(address, values, node.address);
+        newChildren.add(newNode);
+      }
+      return Parent(newChildren, node.address);
+    }
+    return node;
+  }
+
+  // Check if the oldNode is a Parent and start the recursion.
+  if (oldNode is Parent) {
+    return setLeafRecursive(oldNode, address, values) as Parent;
+  } else {
+    throw Exception('The root node must be a Parent node.');
+  }
+}
+
+// Extension method to compare two lists for equality and to check if a list starts with another list.
+extension ListExtensions on List {
+  bool equals(List list) {
+    return listEquals(this, list);
+  }
+
+  bool startsWith(List list) {
+    if (length < list.length) return false;
+    for (int i = 0; i < list.length; i++) {
+      if (this[i] != list[i]) return false;
+    }
+    return true;
+  }
 }
