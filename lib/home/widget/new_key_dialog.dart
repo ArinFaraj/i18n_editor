@@ -55,7 +55,7 @@ String? convertAddressToString(List<dynamic>? address) {
   return address.map((e) => e.toString()).join('.');
 }
 
-List<dynamic> convertStringToAddress(String address) {
+List<Object> convertStringToAddress(String address) {
   return address.split('.').map((e) {
     if (int.tryParse(e) != null) {
       return int.parse(e);

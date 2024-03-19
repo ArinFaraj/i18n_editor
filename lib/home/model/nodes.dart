@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 sealed class Node extends Equatable {
   const Node(this.address);
 
-  final List<dynamic> address;
+  final List<Object> address;
 }
 
 class Leaf extends Node {
