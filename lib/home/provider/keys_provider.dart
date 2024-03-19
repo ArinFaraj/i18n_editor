@@ -222,12 +222,6 @@ Leaf? getLeaf(Node node, List<dynamic> address) {
   return null;
 }
 
-// create a recursive method to copy the tree
-// and set the value of the leaf
-// if it exists, otherwise create a new leaf
-// setLeaf is not recursive
-// please generate a new inner method for the recursion
-
 Parent setLeaf(
   Node oldNode,
   List<Object> address,
