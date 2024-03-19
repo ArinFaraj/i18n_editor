@@ -45,7 +45,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
         .add(address: leaf.address, changedFiles: leaf.values.keys.toList());
   }
 
-  void addEmptyLeaf(List<dynamic> address) {
+  void addEmptyLeaf(List<Object> address) {
     if (state.value == null) return;
     final leaf = Leaf(
       address,
@@ -144,6 +144,29 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
       changedFiles: [file],
     );
   }
+
+  void removeLeaf(List<Object> address) {
+    if (state.value == null) return;
+    state = AsyncData(
+      deleteLeaf(state.value!, address),
+    );
+    ref
+        .read(modifiedNodesProvider.notifier)
+        .add(address: address, changedFiles: []);
+  }
+}
+
+Parent deleteLeaf(Parent node, List<Object> address) {
+  final children = node.children
+      .where((child) => !listEquals(child.address, address))
+      .map((child) {
+    if (child is Parent) {
+      return deleteLeaf(child, address);
+    }
+    return child;
+  }).toList();
+
+  return Parent(children, node.address);
 }
 
 Parent extractNodes(
@@ -153,11 +176,11 @@ Parent extractNodes(
   final filesCopy = Map<String, Map<String, dynamic>>.from(files);
   final baseJson = filesCopy.remove(baseLocalePath);
 
-  Node extractNode(dynamic jsonValue, [List<dynamic> path = const []]) {
+  Node extractNode(dynamic jsonValue, [List<Object> path = const []]) {
     if (jsonValue is Map) {
       final children = <Node>[];
       jsonValue.forEach((key, value) {
-        final newPath = [...path, key];
+        final newPath = [...path, key as Object];
         children.add(extractNode(value, newPath));
       });
       return Parent(children, path);
@@ -207,11 +230,11 @@ Leaf? getLeaf(Node node, List<dynamic> address) {
 
 Parent setLeaf(
   Node oldNode,
-  List<dynamic> address,
+  List<Object> address,
   Map<String, String?> values,
 ) {
   // Helper function to create a new node (leaf or parent) with the given address and values.
-  Node createNewNode(List<dynamic> address, Map<String, String?> values,
+  Node createNewNode(List<Object> address, Map<String, String?> values,
       List<dynamic> currentAddress) {
     var index = currentAddress.length;
     Node newNode = Leaf(address, values);
@@ -224,7 +247,7 @@ Parent setLeaf(
 
   // Helper function to recursively copy the tree and set/update the leaf.
   Node setLeafRecursive(
-      Node node, List<dynamic> address, Map<String, String?> values) {
+      Node node, List<Object> address, Map<String, String?> values) {
     if (node is Leaf && node.address.equals(address)) {
       // If the current node is the target leaf, update its values.
       return node.copyWith(values: values);

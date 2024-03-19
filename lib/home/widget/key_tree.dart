@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
+import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
+import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
   if (depth == 0) {
@@ -28,30 +30,71 @@ Widget buildKeyTree(List<Node> nodes, WidgetRef ref, [int depth = 0]) {
               child: const VerticalDivider(width: 0),
             ),
           switch (node) {
-            Leaf node_ => ListTile(
-                selectedTileColor: Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer
-                    .withOpacity(0.3),
-                title: Padding(
-                  padding: EdgeInsets.only(left: depth * 16),
-                  child: Badge(
-                    isLabelVisible: (ref
-                                .watch(modifiedNodesProvider)[node_.address]
-                                ?.length ??
-                            0) >
-                        0,
-                    child: Text(
-                      node_.address.last.toString(),
+            Leaf node_ => ContextMenuRegion(
+                contextMenu: ContextMenu(
+                  entries: [
+                    // const MenuHeader(text: "Context Menu"),
+                    MenuItem(
+                      label: 'Delete Key',
+                      icon: Icons.delete,
+                      onSelected: () {
+                        ref.read(keysProvider.notifier).removeLeaf(
+                              node_.address,
+                            );
+                      },
+                    ),
+                    const MenuDivider(),
+                    MenuItem.submenu(
+                      label: 'Edit',
+                      icon: Icons.edit,
+                      items: [
+                        MenuItem(
+                          label: 'Undo',
+                          value: "Undo",
+                          icon: Icons.undo,
+                          onSelected: () {
+                            // implement undo
+                          },
+                        ),
+                        MenuItem(
+                          label: 'Redo',
+                          value: 'Redo',
+                          icon: Icons.redo,
+                          onSelected: () {
+                            // implement redo
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                  // position: const Offset(300, 300),
+                  padding: const EdgeInsets.all(8.0),
+                ),
+                child: ListTile(
+                  selectedTileColor: Theme.of(context)
+                      .colorScheme
+                      .secondaryContainer
+                      .withOpacity(0.3),
+                  title: Padding(
+                    padding: EdgeInsets.only(left: depth * 16),
+                    child: Badge(
+                      isLabelVisible: (ref
+                                  .watch(modifiedNodesProvider)[node_.address]
+                                  ?.length ??
+                              0) >
+                          0,
+                      child: Text(
+                        node_.address.last.toString(),
+                      ),
                     ),
                   ),
+                  selected: ref.watch(selectedAddressProvider) == node_.address,
+                  dense: true,
+                  onTap: () {
+                    ref.read(selectedAddressProvider.notifier).state =
+                        node_.address;
+                  },
                 ),
-                selected: ref.watch(selectedAddressProvider) == node_.address,
-                dense: true,
-                onTap: () {
-                  ref.read(selectedAddressProvider.notifier).state =
-                      node_.address;
-                },
               ),
             Parent node_ => ExpansionTile(
                 initiallyExpanded: true,
