@@ -26,7 +26,7 @@ class Leaf extends Node {
   }
 
   @override
-  List<Object?> get props => [address, values];
+  List<Object?> get props => [address];
 }
 
 class Parent extends Node {
@@ -34,5 +34,5 @@ class Parent extends Node {
   final List<Node> children;
 
   @override
-  List<Object?> get props => [children, address];
+  List<Object?> get props => [address];
 }
