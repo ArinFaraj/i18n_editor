@@ -54,6 +54,7 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     state = AsyncData(
       setLeaf(state.value!, address, leaf.values),
     );
+    ref.read(selectedAddressProvider.notifier).state = address;
     ref.read(modifiedNodesProvider.notifier).add(
       address: address,
       changedFiles: [],
