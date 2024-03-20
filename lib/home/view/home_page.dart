@@ -1,4 +1,3 @@
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/toast/toast_provider.dart';
@@ -32,6 +31,7 @@ class HomePage extends ConsumerWidget {
 
     final keys = ref.watch(keysProvider);
     final selectedNode = ref.watch(selectedLeafProvider).value;
+    final project = ref.watch(projectManagerProvider);
 
     return Scaffold(
       body: Column(
@@ -40,7 +40,7 @@ class HomePage extends ConsumerWidget {
           const HomeMenuBar(),
           const Divider(height: 1),
           Expanded(
-            child: (ref.watch(projectManagerProvider) == null)
+            child: project == null
                 ? const Center(
                     child: Icon(Icons.language_outlined, size: 100),
                   )
