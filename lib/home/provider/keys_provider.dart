@@ -227,9 +227,9 @@ Parent setLeaf(
   List<Object> address,
   Map<String, String?> values,
 ) {
-  // Helper function to create a new node (leaf or parent) with the given address and values.
-  Node createNewNode(List<Object> address, Map<String, String?> values,
-      List<dynamic> currentAddress) {
+  Node createNewNode(
+    List<dynamic> currentAddress,
+  ) {
     var index = currentAddress.length;
     Node newNode = Leaf(address, values);
     while (index < address.length - 1) {
@@ -239,27 +239,27 @@ Parent setLeaf(
     return newNode;
   }
 
-  // Helper function to recursively copy the tree and set/update the leaf.
   Node setLeafRecursive(
-      Node node, List<Object> address, Map<String, String?> values) {
+    Node node,
+  ) {
     if (node is Leaf && node.address.equals(address)) {
       // If the current node is the target leaf, update its values.
       return node.copyWith(values: values);
     } else if (node is Parent) {
       // If the current node is a parent, recursively update its children.
-      var newChildren = <Node>[];
+      final newChildren = <Node>[];
       var found = false;
       for (var child in node.children) {
         if (address.startsWith(child.address)) {
           found = true;
-          newChildren.add(setLeafRecursive(child, address, values));
+          newChildren.add(setLeafRecursive(child));
         } else {
           newChildren.add(child);
         }
       }
       // If the target leaf was not found in the children, create a new leaf or parent as needed.
       if (!found) {
-        Node newNode = createNewNode(address, values, node.address);
+        Node newNode = createNewNode(node.address);
         newChildren.add(newNode);
       }
       return Parent(newChildren, node.address);
@@ -269,7 +269,7 @@ Parent setLeaf(
 
   // Check if the oldNode is a Parent and start the recursion.
   if (oldNode is Parent) {
-    return setLeafRecursive(oldNode, address, values) as Parent;
+    return setLeafRecursive(oldNode) as Parent;
   } else {
     throw Exception('The root node must be a Parent node.');
   }
