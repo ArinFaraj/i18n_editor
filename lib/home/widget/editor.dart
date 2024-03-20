@@ -9,16 +9,13 @@ import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/utils.dart';
 
 class Editor extends HookConsumerWidget {
-  const Editor({
-    super.key,
-  });
+  const Editor({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final files = ref.watch(filesNotifierProvider);
+    final files = ref.watch(filesNotifierProvider).valueOrNull;
 
-    final filesValue = files.valueOrNull;
-    if (filesValue == null) {
+    if (files == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -27,9 +24,9 @@ class Editor extends HookConsumerWidget {
     if (selected == null) return const LinearProgressIndicator();
 
     return ListView.builder(
-      itemCount: filesValue.length,
+      itemCount: files.length,
       itemBuilder: (context, index) {
-        final file = filesValue.keys.elementAt(index);
+        final file = files.keys.elementAt(index);
 
         return LocaleKeyEditor(
           node: selected,
