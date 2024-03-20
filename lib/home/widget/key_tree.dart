@@ -67,6 +67,16 @@ class KeyTree extends HookConsumerWidget {
                   );
             },
           ),
+          MenuItem(
+            label: 'Move Key',
+            icon: Icons.edit,
+            onSelected: () {
+              showMoveKeyDialog(
+                context,
+                node_.address,
+              );
+            },
+          ),
         ];
 
         void expandOrSelectNode() {

@@ -16,9 +16,12 @@ i18n project file content (.i18n_configs.yaml):
 file_prefix: strings
 
 ---
-# TODO
+
+## TODO
+
+- [ ] Change the state structure to maps
 - [ ] Drag and drop keys to move them into or out of sub keys
 - [ ] Add new language
-- [ ] Rename keys
+- [x] Rename keys
 - [ ] Option to choose the base file instead of basing it on the prefix
 - [ ] New layout to view all keys for all languages in a list view

@@ -33,6 +33,23 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
     return extractNodes(baseLocalePath, files);
   }
 
+  void moveLeafAddress(List<Object> oldAddress, List<Object> newAddress) {
+    state = AsyncData(
+      moveLeaf(state.value!, oldAddress, newAddress),
+    );
+
+    ref.read(selectedAddressProvider.notifier).state = newAddress;
+    ref.read(modifiedNodesProvider.notifier)
+      ..remove(
+        address: oldAddress,
+        changedFiles: [],
+      )
+      ..add(
+        address: newAddress,
+        changedFiles: [],
+      );
+  }
+
   void updateLeaf(Leaf leaf) {
     if (state.value == null) return;
 
@@ -276,7 +293,6 @@ Parent setLeaf(
   }
 }
 
-// Extension method to compare two lists for equality and to check if a list starts with another list.
 extension ListExtensions on List {
   bool equals(List list) {
     return listEquals(this, list);
@@ -289,4 +305,13 @@ extension ListExtensions on List {
     }
     return true;
   }
+}
+
+// can be improved for better performance
+Parent moveLeaf(Parent node, List<Object> fromAddress, List<Object> toAddress) {
+  final leaf = getLeaf(node, fromAddress);
+  if (leaf == null) return node;
+
+  final newParent = deleteLeaf(node, fromAddress);
+  return setLeaf(newParent, toAddress, leaf.values);
 }
