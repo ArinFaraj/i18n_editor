@@ -13,6 +13,19 @@ void showNewProjectDialog(BuildContext context, WidgetRef ref) {
         final prefixController = useTextEditingController(text: 'strings');
         final defaultLocaleController = useTextEditingController(text: 'en');
 
+        void cancel() {
+          ref.read(projectManagerProvider.notifier).closeProject();
+          Navigator.of(context).pop();
+        }
+
+        void ok() {
+          ref.read(i18nConfigsProvider.notifier).createFile(
+                prefix: prefixController.text,
+                defaultLocale: defaultLocaleController.text,
+              );
+          Navigator.of(context).pop();
+        }
+
         return AlertDialog(
           title: const Text('New i18n Project'),
           content: Column(
@@ -34,20 +47,11 @@ void showNewProjectDialog(BuildContext context, WidgetRef ref) {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                ref.read(projectManagerProvider.notifier).closeProject();
-                Navigator.of(context).pop();
-              },
+              onPressed: cancel,
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                ref.read(i18nConfigsProvider.notifier).createFile(
-                      prefix: prefixController.text,
-                      defaultLocale: defaultLocaleController.text,
-                    );
-                Navigator.of(context).pop();
-              },
+              onPressed: ok,
               child: const Text('Ok'),
             ),
           ],
