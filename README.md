@@ -15,3 +15,10 @@ when we select a key we must see the translations of that key in all the files a
 i18n project file content (.i18n_configs.yaml):
 file_prefix: strings
 
+---
+# TODO
+- [ ] Drag and drop keys to move them into or out of sub keys
+- [ ] Add new language
+- [ ] Rename keys
+- [ ] Option to choose the base file instead of basing it on the prefix
+- [ ] New layout to view all keys for all languages in a list view
