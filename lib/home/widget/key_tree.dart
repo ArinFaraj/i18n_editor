@@ -15,23 +15,21 @@ class KeyTree extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final treeController = useRef(
-      TreeController(
-        roots: nodes,
-        childrenProvider: (node) => switch (node) {
-          Leaf _ => [],
-          Parent parent => parent.children,
-        },
-      ),
-    );
-
-    useEffect(
-      () {
-        treeController.value.expandAll();
-        return () => treeController.value.dispose();
+    final theme = Theme.of(context);
+    final selectedAddress = ref.watch(selectedAddressProvider);
+    final modifiedNodes = ref.watch(modifiedNodesProvider);
+    final treeController = useRef(TreeController(
+      roots: nodes,
+      childrenProvider: (node) => switch (node) {
+        Leaf _ => [],
+        Parent parent => parent.children,
       },
-      [treeController],
-    );
+    ));
+
+    useEffect(() {
+      treeController.value.expandAll();
+      return () => treeController.value.dispose();
+    }, [treeController]);
 
     useEffect(() {
       treeController.value.roots = nodes;
@@ -44,88 +42,68 @@ class KeyTree extends HookConsumerWidget {
       curve: Curves.easeInOut,
       nodeBuilder: (context, entry) {
         final node_ = entry.node;
+        final isSelected = selectedAddress == node_.address;
         final isLeaf = node_ is Leaf;
-        final selected = ref.watch(selectedAddressProvider) == node_.address;
+        final isModified = (modifiedNodes[node_.address]?.length ?? 0) > 0;
+
+        final menuItems = [
+          if (!isLeaf)
+            MenuItem(
+              label: 'Add Key',
+              icon: Icons.add,
+              onSelected: () => showNewKeyDialog(context, node_.address),
+            ),
+          MenuItem(
+            label: 'Delete Key',
+            icon: Icons.delete,
+            onSelected: () => ref.read(keysProvider.notifier).removeLeaf(
+                  node_.address,
+                ),
+          ),
+        ];
+
+        void onTap() {
+          if (isLeaf) {
+            ref.read(selectedAddressProvider.notifier).state = node_.address;
+          } else {
+            treeController.value.toggleExpansion(node_);
+          }
+        }
 
         return ContextMenuRegion(
           contextMenu: ContextMenu(
-            entries: [
-              // const MenuHeader(text: "Context Menu"),
-              if (!isLeaf)
-                MenuItem(
-                  label: 'Add Key',
-                  icon: Icons.add,
-                  onSelected: () {
-                    showNewKeyDialog(context, node_.address);
-                  },
-                ),
-              MenuItem(
-                label: 'Delete Key',
-                icon: Icons.delete,
-                onSelected: () {
-                  ref.read(keysProvider.notifier).removeLeaf(
-                        node_.address,
-                      );
-                },
-              ),
-              const MenuDivider(),
-              MenuItem.submenu(
-                label: 'Edit',
-                icon: Icons.edit,
-                items: [
-                  MenuItem(
-                    label: 'Undo',
-                    value: "Undo",
-                    icon: Icons.undo,
-                    onSelected: () {
-                      // implement undo
-                    },
-                  ),
-                  MenuItem(
-                    label: 'Redo',
-                    value: 'Redo',
-                    icon: Icons.redo,
-                    onSelected: () {
-                      // implement redo
-                    },
-                  ),
-                ],
-              ),
-            ],
-            // position: const Offset(300, 300),
-            padding: const EdgeInsets.all(8.0),
+            entries: menuItems,
+            padding: const EdgeInsets.all(2),
           ),
           child: Material(
-            color: selected
-                ? Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer
-                    .withOpacity(0.3)
+            color: isSelected
+                ? theme.colorScheme.secondaryContainer.withOpacity(0.3)
                 : null,
             child: InkWell(
-              splashColor: Theme.of(context).colorScheme.secondaryContainer,
-              highlightColor: Theme.of(context).colorScheme.secondaryContainer,
+              splashColor: theme.colorScheme.secondaryContainer,
+              highlightColor: theme.colorScheme.secondaryContainer,
+              onTap: onTap,
               child: TreeIndentation(
+                guide: const IndentGuide.connectingLines(
+                  indent: 17,
+                  origin: 0.7,
+                ),
                 entry: entry,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(7.0),
                   child: Badge(
-                    isLabelVisible: (ref
-                                .watch(modifiedNodesProvider)[node_.address]
-                                ?.length ??
-                            0) >
-                        0,
+                    isLabelVisible: isModified,
                     child: Row(
                       children: [
-                        isLeaf
-                            ? const Icon(Icons.arrow_right, size: 18)
-                            : entry.isExpanded
-                                ? const Icon(Icons.folder_open, size: 18)
-                                : const Icon(Icons.folder, size: 18),
+                        if (!isLeaf)
+                          Icon(
+                            entry.isExpanded ? Icons.folder_open : Icons.folder,
+                            size: 18,
+                          ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            entry.node.address.last.toString(),
+                            node_.address.last.toString(),
                           ),
                         ),
                       ],
@@ -133,14 +111,6 @@ class KeyTree extends HookConsumerWidget {
                   ),
                 ),
               ),
-              onTap: () {
-                if (isLeaf) {
-                  ref.read(selectedAddressProvider.notifier).state =
-                      node_.address;
-                } else {
-                  treeController.value.toggleExpansion(entry.node);
-                }
-              },
             ),
           ),
         );
