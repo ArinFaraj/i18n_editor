@@ -33,6 +33,11 @@ class KeyTree extends HookConsumerWidget {
 
     useEffect(() {
       treeController.value.roots = nodes;
+      Future.delayed(Duration.zero, () {
+        if (context.mounted) {
+          treeController.value.expandAll();
+        }
+      });
 
       return null;
     }, [nodes]);
@@ -56,13 +61,15 @@ class KeyTree extends HookConsumerWidget {
           MenuItem(
             label: 'Delete Key',
             icon: Icons.delete,
-            onSelected: () => ref.read(keysProvider.notifier).removeLeaf(
-                  node_.address,
-                ),
+            onSelected: () {
+              ref.read(keysProvider.notifier).removeLeaf(
+                    node_.address,
+                  );
+            },
           ),
         ];
 
-        void onTap() {
+        void expandOrSelectNode() {
           if (isLeaf) {
             ref.read(selectedAddressProvider.notifier).state = node_.address;
           } else {
@@ -82,7 +89,7 @@ class KeyTree extends HookConsumerWidget {
             child: InkWell(
               splashColor: theme.colorScheme.secondaryContainer,
               highlightColor: theme.colorScheme.secondaryContainer,
-              onTap: onTap,
+              onTap: expandOrSelectNode,
               child: TreeIndentation(
                 guide: const IndentGuide.connectingLines(
                   indent: 17,
@@ -90,7 +97,7 @@ class KeyTree extends HookConsumerWidget {
                 ),
                 entry: entry,
                 child: Padding(
-                  padding: const EdgeInsets.all(7.0),
+                  padding: const EdgeInsets.all(6.0),
                   child: Badge(
                     isLabelVisible: isModified,
                     child: Row(
