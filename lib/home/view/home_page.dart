@@ -10,6 +10,7 @@ import 'package:i18n_editor/home/widget/editor.dart';
 import 'package:i18n_editor/home/widget/home_menu_bar.dart';
 import 'package:i18n_editor/home/widget/key_tree.dart';
 import 'package:i18n_editor/home/widget/new_project_dialog.dart';
+import 'package:i18n_editor/home/widget/toast_handler.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -17,67 +18,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(toastProvider, (_, toasts) {
       if (toasts.isEmpty) return;
-
-      showSequencialToasts(
-        toasts: toasts
-            .map(
-              (e) => Toast(
-                animationBuilder: (context, controller, child) =>
-                    SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(controller),
-                  child: FadeTransition(
-                    opacity: controller,
-                    child: child,
-                  ),
-                ),
-                alignment: Alignment.topRight,
-                duration: const Duration(seconds: 4),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 60,
-                    right: 30,
-                  ),
-                  child: Card(
-                    color: switch (e.$2) {
-                      ToastType.info => null,
-                      ToastType.success => Colors.green,
-                      ToastType.warning => Colors.orange,
-                      ToastType.error => Colors.red,
-                    }
-                        ?.withOpacity(0.3),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            switch (e.$2) {
-                              ToastType.info => Icons.info,
-                              ToastType.success => Icons.check,
-                              ToastType.warning => Icons.warning,
-                              ToastType.error => Icons.error,
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            e.$1,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-            .toList(),
-        context: context,
-      );
-      ref.read(toastProvider.notifier).remove(toasts);
+      handleToasts(toasts, context, ref);
     });
 
     ref.listen(projectManagerProvider, (prev, next) async {
@@ -125,7 +66,9 @@ class HomePage extends ConsumerWidget {
                       Expanded(
                         flex: 2,
                         child: selectedNode == null
-                            ? const Center(child: Text('Select a key to edit'))
+                            ? const Center(
+                                child: Text('Select a key to edit'),
+                              )
                             : const Padding(
                                 padding: EdgeInsets.all(4.0),
                                 child: Editor(),
