@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
-import 'package:i18n_editor/home/provider/keys_provider.dart';
+import 'package:i18n_editor/home/provider/movements.dart';
 
 void main() {
   group('KeysNotifier', () {
