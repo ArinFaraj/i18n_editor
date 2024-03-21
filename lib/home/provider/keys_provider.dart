@@ -111,20 +111,26 @@ class KeysNotifier extends AsyncNotifier<KeysState> {
           addData(child);
         }
       } else if (json is Leaf) {
+        final address = json.address;
+        final last = address.last;
+        final isInt = last is int;
+
         for (final file in files) {
           final content = json.values[file];
-          final address = json.address;
 
-          if (content != null) {
-            filesData[file] = filesData[file] ?? {};
-            dynamic current = filesData[file]!;
-            for (final key in address) {
-              if (key == address.last) {
-                current[key] = content;
-              } else {
-                current[key] = current[key] ?? {};
-                current = current[key];
-              }
+          if (content == null) continue;
+
+          filesData[file] = filesData[file] ?? {};
+          dynamic current = filesData[file]!;
+          for (final key in address) {
+            if (key == last) {
+              current[key] = content;
+            } else if (isInt && key == address[address.length - 2]) {
+              current[key] = current[key] ?? [];
+              current = current[key];
+            } else {
+              current[key] = current[key] ?? {};
+              current = current[key];
             }
           }
         }

@@ -36,3 +36,29 @@ class Parent extends Node {
   @override
   List<Object?> get props => [address];
 }
+
+class NewNode {
+  final Object? key;
+  final int id;
+
+  NewNode(this.id, {required this.key});
+
+  @override
+  String toString() {
+    return 'NewNode{key: $key}';
+  }
+}
+
+class NewLeaf extends NewNode {
+  final Map<String, String?> values;
+  NewLeaf(
+    super.id, {
+    required super.key,
+    required this.values,
+  });
+
+  @override
+  String toString() {
+    return 'NewLeaf{key: $key, values: $values}';
+  }
+}

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
@@ -143,4 +145,16 @@ extension ListExtensions on List {
     }
     return true;
   }
+}
+
+/// Generates a new id that is not used by any element.
+int getNewId([List<int>? existing]) {
+  final random = Random();
+  var id = random.nextInt(9999999);
+
+  while (existing?.contains(id) ?? false) {
+    id = random.nextInt(999999999999);
+  }
+
+  return id;
 }
