@@ -100,5 +100,38 @@ void main() {
       expect(newState.nodes[node.id], null);
       expect(newState.nodeOrder.contains(node.id), false);
     });
+
+    test('move node after second node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final secondId = state.nodeOrder[1];
+      final node = state.nodes[state.nodeOrder.first]!;
+      final newState = state.moveNode(
+        node,
+        newParentId: state.nodeOrder.first,
+        afterId: secondId,
+      );
+      expect(newState.nodeOrder[1], node.id);
+    });
+
+    test('move node into a sub node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final node = state.nodes[state.nodeOrder.first]!;
+      final newParentId = state.nodeOrder[2];
+      final newState = state.moveNode(
+        node,
+        newParentId: newParentId,
+      );
+      expect(newState.parentTree[node.id], newParentId);
+    });
+
+    test('move node outside a sub node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final node = state.nodes[state.nodeOrder[3]]!;
+      final newState = state.moveNode(
+        node,
+        newParentId: null,
+      );
+      expect(newState.parentTree[node.id], null);
+    });
   });
 }

@@ -110,4 +110,13 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
   void remove(NewNode node) {
     state = AsyncData(state.value?.removeNode(node));
   }
+
+  void move(NewNode node, int newParentId, {int? beforeId, int? afterId}) {
+    state = AsyncData(state.value?.moveNode(
+      node,
+      newParentId: newParentId,
+      beforeId: beforeId,
+      afterId: afterId,
+    ));
+  }
 }

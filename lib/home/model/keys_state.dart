@@ -78,4 +78,37 @@ extension NewKeyStateExt on NewKeysState {
       nodeOrder: rnodeOrder,
     );
   }
+
+  /// Moves [node] to [newParentId] and inserts it before [beforeId] or after [afterId].
+  /// If [newParentId] is null, [node] will be moved to the root.
+  NewKeysState moveNode(
+    NewNode node, {
+    required int? newParentId,
+    int? beforeId,
+    int? afterId,
+  }) {
+    var newNodeOrder = nodeOrder;
+    var newParentTree = parentTree;
+
+    final id = node.id;
+    if (newParentId != null) {
+      newParentTree = newParentTree.add(id, newParentId);
+    } else {
+      newParentTree = newParentTree.remove(id);
+    }
+    if (beforeId != null) {
+      newNodeOrder = newNodeOrder.remove(id);
+      final index = newNodeOrder.indexOf(beforeId);
+      newNodeOrder = newNodeOrder.insert(index, id);
+    } else if (afterId != null) {
+      newNodeOrder = newNodeOrder.remove(id);
+      final index = newNodeOrder.indexOf(afterId) + 1;
+      newNodeOrder = newNodeOrder.insert(index, id);
+    }
+
+    return copyWith(
+      parentTree: newParentTree,
+      nodeOrder: newNodeOrder,
+    );
+  }
 }
