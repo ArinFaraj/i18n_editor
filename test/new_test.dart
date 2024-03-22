@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:i18n_editor/home/model/keys_state.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/movements.dart';
 import 'package:i18n_editor/home/provider/new_keys_provider.dart';
@@ -15,7 +16,10 @@ void main() {
           'key2': 'value2',
           'key3': {
             'key4': 'value4',
-            'key5': 'value5',
+            'key5': [
+              'value5',
+              'value6',
+            ],
           },
         },
         'ar.json': {
@@ -23,7 +27,10 @@ void main() {
           'key2': 'قيمة2',
           'key3': {
             'key4': 'قيمة4',
-            'key5': 'قيمة5',
+            'key5': [
+              'قيمة5',
+              'قيمة6',
+            ],
           },
         },
       };
@@ -35,17 +42,63 @@ void main() {
     });
     test('add node after second node', () {
       final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
-      final secondId = state.elementOrder[1];
+      final secondId = state.nodeOrder[1];
       final newState = state.addNode(
-        NewLeaf(getNewId(state.elementOrder.toList()), key: 'key6', values: {
-          'en.json': 'value6',
-          'ar.json': 'قيمة6',
+        NewLeaf(getNewId(state.nodeOrder.toList()), key: 'key6', values: {
+          'en.json': 'value7',
+          'ar.json': 'قيمة7',
         }),
-        parentId: state.elementOrder.first,
+        parentId: state.nodeOrder.first,
         afterId: secondId,
       );
 
-      expect(newState.elements[newState.elementOrder[2]]!.key, 'key6');
+      expect(newState.nodes[newState.nodeOrder[2]]!.key, 'key6');
+    });
+
+    test('add node before second node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final secondId = state.nodeOrder[1];
+      final newState = state.addNode(
+        NewLeaf(getNewId(state.nodeOrder.toList()), key: 'key6', values: {
+          'en.json': 'value7',
+          'ar.json': 'قيمة7',
+        }),
+        parentId: state.nodeOrder.first,
+        beforeId: secondId,
+      );
+      expect(newState.nodes[newState.nodeOrder[1]]!.key, 'key6');
+    });
+
+    test('add node without before or after', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final newState = state.addNode(
+        NewLeaf(getNewId(state.nodeOrder.toList()), key: 'key6', values: {
+          'en.json': 'value7',
+          'ar.json': 'قيمة7',
+        }),
+        parentId: state.nodeOrder.first,
+      );
+      expect(newState.nodes[newState.nodeOrder.last]!.key, 'key6');
+    });
+
+    test('add node with no parent', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final newState = state.addNode(
+        NewLeaf(getNewId(state.nodeOrder.toList()), key: 'key6', values: {
+          'en.json': 'value7',
+          'ar.json': 'قيمة7',
+        }),
+        parentId: null,
+      );
+      expect(newState.nodes[newState.nodeOrder.last]!.key, 'key6');
+    });
+
+    test('remove node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final node = state.nodes[state.nodeOrder.first]!;
+      final newState = state.removeNode(node);
+      expect(newState.nodes[node.id], null);
+      expect(newState.nodeOrder.contains(node.id), false);
     });
   });
 }

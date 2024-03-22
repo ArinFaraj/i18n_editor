@@ -147,7 +147,7 @@ extension ListExtensions on List {
   }
 }
 
-/// Generates a new id that is not used by any element.
+/// Generates a new id that is not used by any node.
 int getNewId([List<int>? existing]) {
   final random = Random();
   var id = random.nextInt(9999999);
