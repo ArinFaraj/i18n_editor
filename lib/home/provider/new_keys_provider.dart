@@ -1,10 +1,17 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:i18n_editor/home/model/keys_state.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
+import 'package:i18n_editor/home/provider/keys_traverse.dart';
+import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/movements.dart';
+import 'package:i18n_editor/home/provider/project_manager.dart';
 import 'package:i18n_editor/utils.dart';
+import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
 final emptyNewKeysState = (
@@ -93,6 +100,64 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     );
   }
 
+  Future<void> saveFiles() async {
+    final projectPath = ref.watch(projectManagerProvider);
+    if (projectPath == null) return;
+    final files = (await ref.read(filesNotifierProvider.future))?.keys.toList();
+    if (files == null) return;
+    final data = state.value;
+    if (data == null) return;
+
+    const encoder = JsonEncoder.withIndent('  ');
+    final filesData = <String, Map<String, dynamic>>{};
+
+    void addData(Object json) {
+      if (json is NewLeaf) {
+        final address = data.getAddress(json);
+        final last = address.last;
+        final isInt = last is int;
+        for (final file in files) {
+          final content = json.values[file];
+          if (content == null) continue;
+          filesData[file] = filesData[file] ?? {};
+          dynamic current = filesData[file]!;
+          for (final key in address) {
+            if (key == last) {
+              current[key] = content;
+            } else if (isInt && key == address[address.length - 2]) {
+              current[key] = current[key] ?? [];
+              current = current[key];
+            } else {
+              current[key] = current[key] ?? {};
+              current = current[key];
+            }
+          }
+        }
+      } else if (json is NewNode) {
+        final children = data.getChildren(json);
+        for (final child in children) {
+          addData(child);
+        }
+      }
+    }
+
+    final rootNodes = data.nodeOrder
+        .where((element) => data.parentTree[element] == null)
+        .toList();
+
+    for (final id in rootNodes) {
+      final item = data.nodes[id];
+      addData(item!);
+    }
+
+    for (final MapEntry(key: path, value: content) in filesData.entries) {
+      final stringContent = encoder.convert(content);
+      await File(join(projectPath, path)).writeAsString(stringContent);
+    }
+
+    ref.invalidate(modifiedNodesProvider);
+  }
+
   void add(
     NewNode node, {
     required int? newParentId,
@@ -118,5 +183,9 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
       beforeId: beforeId,
       afterId: afterId,
     ));
+  }
+
+  void updateNode(NewNode currentNode, NewNode newNode) {
+    state = AsyncData(state.value?.updateNode(currentNode, newNode));
   }
 }

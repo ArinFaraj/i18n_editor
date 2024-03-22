@@ -24,8 +24,7 @@ extension NewKeyStateTraverse on NewKeysState {
 
   /// Gets the child of [node].
   NewNode? getChild(NewNode node) {
-    return nodes.values
-        .firstWhereOrNull((e) => parentTree[e.id] == node.id);
+    return nodes.values.firstWhereOrNull((e) => parentTree[e.id] == node.id);
   }
 
   /// Gets the parent of [node].
@@ -35,7 +34,7 @@ extension NewKeyStateTraverse on NewKeysState {
   }
 
   /// Finds the first node of type [T] in the tree of [node].
-  T? findnodeInTree<T extends NewNode>(NewNode node) {
+  T? findNodeInTree<T extends NewNode>(NewNode node) {
     var parent = getParent(node);
     while (parent != null) {
       if (parent is T) {
@@ -47,8 +46,18 @@ extension NewKeyStateTraverse on NewKeysState {
     return null;
   }
 
+  List<Object> getAddress(NewNode node) {
+    final List<Object> address = [];
+    var parent = getParent(node);
+    while (parent?.key != null) {
+      address.add(parent!.key!);
+      parent = getParent(parent);
+    }
+    return address.reversed.toList();
+  }
+
   /// Finds the first node that matches [predicate] in the tree of [node].
-  NewNode? findnodeInTreeWhere(
+  NewNode? findNodeInTreeWhere(
     NewNode node,
     bool Function(NewNode) predicate,
   ) {

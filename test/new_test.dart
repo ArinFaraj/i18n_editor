@@ -133,5 +133,22 @@ void main() {
       );
       expect(newState.parentTree[node.id], null);
     });
+
+    test('update node', () {
+      final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
+      final node = state.nodes[state.nodeOrder.first]!;
+      final newState = state.updateNode(
+        node,
+        NewLeaf(
+          node.id,
+          key: 'key8',
+          values: {
+            'en.json': 'value8',
+            'ar.json': 'قيمة8',
+          },
+        ),
+      );
+      expect(newState.nodes[node.id]!.key, 'key8');
+    });
   });
 }

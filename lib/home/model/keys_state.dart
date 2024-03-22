@@ -111,4 +111,17 @@ extension NewKeyStateExt on NewKeysState {
       nodeOrder: newNodeOrder,
     );
   }
+
+  NewKeysState updateNode(NewNode currentNode, NewNode newNode) {
+    return copyWith(
+      parentTree: parentTree.map(
+        (key, value) => MapEntry(
+          key == currentNode.id ? newNode.id : key,
+          value == currentNode.id ? newNode.id : value,
+        ),
+      ),
+      nodes: nodes.remove(currentNode.id).add(newNode.id, newNode),
+      nodeOrder: nodeOrder.replaceFirst(from: currentNode.id, to: newNode.id),
+    );
+  }
 }
