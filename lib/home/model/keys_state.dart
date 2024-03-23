@@ -59,7 +59,7 @@ extension NewKeyStateExt on NewKeysState {
     var newParentTree = parentTree;
 
     // we could remove the parent node if it has no children
-    void remove(Node node) {
+    void remove(Node node, {bool removeParent = true}) {
       final id = node.id;
       newOrder = newOrder.remove(id);
       newNodes = newNodes.remove(id);
@@ -67,7 +67,22 @@ extension NewKeyStateExt on NewKeysState {
 
       if (node is! Leaf) {
         for (final child in getChildren(node)) {
-          remove(child);
+          remove(child, removeParent: false);
+        }
+      }
+
+      if (removeParent) {
+        final parentId = parentTree[id];
+        if (parentId != null) {
+          final parentNode = newNodes[parentId];
+          if (parentNode != null && parentNode is Parent) {
+            final remainingChildren = newParentTree.keys
+                .where((key) => newParentTree[key] == parentId)
+                .toList();
+            if (remainingChildren.isEmpty) {
+              remove(parentNode);
+            }
+          }
         }
       }
     }
