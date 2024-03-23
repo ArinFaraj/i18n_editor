@@ -48,7 +48,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final modifiedFilesOfNode = ref.watch(modifiedNodesProvider)[node.address];
+    final modifiedFilesOfNode = ref.watch(modifiedNodesProvider)[node.id];
     final isModified = modifiedFilesOfNode?.contains(filePath) ?? false;
 
     final value = node.values[filePath];
@@ -109,9 +109,15 @@ class LocaleKeyEditor extends HookConsumerWidget {
                       ),
                       onChanged: (value) {
                         debouncer.value.run(() {
-                          ref
-                              .read(keysProvider.notifier)
-                              .updateSelectedLeaf(filePath, value);
+                          ref.read(keysProvider.notifier).updateNode(
+                                node,
+                                node.copyWith(
+                                  values: {
+                                    ...node.values,
+                                    filePath: value,
+                                  },
+                                ),
+                              );
                         });
                       },
                     ),

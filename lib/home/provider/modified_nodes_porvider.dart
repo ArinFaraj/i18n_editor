@@ -1,19 +1,18 @@
 import 'package:riverpod/riverpod.dart';
 
 final modifiedNodesProvider =
-    NotifierProvider<ModifiedNodesNotifier, Map<List<dynamic>, List<String>>>(
+    NotifierProvider<ModifiedNodesNotifier, Map<int, List<String>>>(
   ModifiedNodesNotifier.new,
   name: 'modifiedNodes',
 );
 
-class ModifiedNodesNotifier extends Notifier<Map<List<dynamic>, List<String>>> {
+class ModifiedNodesNotifier extends Notifier<Map<int, List<String>>> {
   @override
-  Map<List<dynamic>, List<String>> build() {
+  Map<int, List<String>> build() {
     return {};
   }
 
-  void add(
-      {required List<dynamic> address, required List<String> changedFiles}) {
+  void add({required int address, required List<String> changedFiles}) {
     final currentlyModifierFilesOfAddress = state[address] ?? [];
 
     state = {
@@ -22,7 +21,7 @@ class ModifiedNodesNotifier extends Notifier<Map<List<dynamic>, List<String>>> {
     };
   }
 
-  void remove({required List address, required List<String> changedFiles}) {
+  void remove({required int address, required List<String> changedFiles}) {
     final currentlyModifierFilesOfAddress = state[address] ?? [];
     state = {
       ...state,

@@ -5,7 +5,7 @@ import 'package:i18n_editor/home/model/nodes.dart';
 
 extension NewKeyStateTraverse on NewKeysState {
   /// Gets the children of [node].
-  IList<NewNode> getChildren(NewNode node) {
+  IList<Node> getChildren(Node node) {
     return nodeOrder
         .where((e) => parentTree[e] == node.id)
         .map((e) => nodes[e]!)
@@ -13,28 +13,37 @@ extension NewKeyStateTraverse on NewKeysState {
   }
 
   /// Gets the children ids of [node].
-  IList<int> getChildrenIds(NewNode node) {
-    return nodeOrder.where((e) => parentTree[e] == node.id).toIList();
+  IList<int> getChildrenIds(int id) {
+    return nodeOrder.where((e) => parentTree[e] == id).toIList();
+  }
+
+  List<int> getRootNodeIds() {
+    return nodeOrder.where((e) => parentTree[e] == null).toList();
+  }
+
+  /// Gets the iterable children ids of node [id].
+  List<int> getChildrenIdsIterable(int id) {
+    return nodeOrder.where((e) => parentTree[e] == id).toList();
   }
 
   /// Checks if [node] has children.
-  bool hasChildren(NewNode node) {
+  bool hasChildren(Node node) {
     return nodeOrder.any((e) => parentTree[e] == node.id);
   }
 
   /// Gets the child of [node].
-  NewNode? getChild(NewNode node) {
+  Node? getChild(Node node) {
     return nodes.values.firstWhereOrNull((e) => parentTree[e.id] == node.id);
   }
 
   /// Gets the parent of [node].
-  NewNode? getParent(NewNode node) {
+  Node? getParent(Node node) {
     final parentId = parentTree[node.id];
     return parentId != null ? nodes[parentId] : null;
   }
 
   /// Finds the first node of type [T] in the tree of [node].
-  T? findNodeInTree<T extends NewNode>(NewNode node) {
+  T? findNodeInTree<T extends Node>(Node node) {
     var parent = getParent(node);
     while (parent != null) {
       if (parent is T) {
@@ -46,8 +55,8 @@ extension NewKeyStateTraverse on NewKeysState {
     return null;
   }
 
-  List<Object> getAddress(NewNode node) {
-    final List<Object> address = [];
+  List<Object> getAddress(Node node) {
+    final List<Object> address = [if (node.key != null) node.key!];
     var parent = getParent(node);
     while (parent?.key != null) {
       address.add(parent!.key!);
@@ -57,9 +66,9 @@ extension NewKeyStateTraverse on NewKeysState {
   }
 
   /// Finds the first node that matches [predicate] in the tree of [node].
-  NewNode? findNodeInTreeWhere(
-    NewNode node,
-    bool Function(NewNode) predicate,
+  Node? findNodeInTreeWhere(
+    Node node,
+    bool Function(Node) predicate,
   ) {
     var parent = getParent(node);
     while (parent != null) {

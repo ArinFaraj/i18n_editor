@@ -94,7 +94,6 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
             onPressed: ref.watch(keysProvider).valueOrNull == null
                 ? null
                 : () async {
-                    ref.invalidate(keysProvider);
                     ref.invalidate(filesNotifierProvider);
                   },
           ),

@@ -4,25 +4,32 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
+import 'package:i18n_editor/home/provider/keys_traverse.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
 
 class KeyTree extends HookConsumerWidget {
-  const KeyTree(this.nodes, {super.key});
-  final List<Node> nodes;
+  const KeyTree({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final selectedAddress = ref.watch(selectedAddressProvider);
+    final selectedId = ref.watch(selectedNodeIdProvider);
     final modifiedNodes = ref.watch(modifiedNodesProvider);
+    final keys = ref.watch(keysProvider);
+    final nodes = keys.value!.getRootNodeIds();
+    print('rebuilding KeyTree');
+
     final treeController = useRef(TreeController(
       roots: nodes,
-      childrenProvider: (node) => switch (node) {
-        Leaf _ => [],
-        Parent parent => parent.children,
+      childrenProvider: (id) {
+        final nodeData = keys.value!.nodes[id];
+        return switch (nodeData) {
+          Parent _ => keys.value!.getChildrenIdsIterable(id),
+          _ => <int>[],
+        };
       },
     ));
 
@@ -46,44 +53,49 @@ class KeyTree extends HookConsumerWidget {
       treeController: treeController.value,
       curve: Curves.easeInOut,
       nodeBuilder: (context, entry) {
-        final node_ = entry.node;
-        final isSelected = selectedAddress == node_.address;
+        final nodeId = entry.node;
+        final node_ = keys.value!.nodes[nodeId];
+        if (node_ == null) return const SizedBox();
+        final isSelected = selectedId == nodeId;
         final isLeaf = node_ is Leaf;
-        final isModified = (modifiedNodes[node_.address]?.length ?? 0) > 0;
+        final isModified = (modifiedNodes[nodeId]?.length ?? 0) > 0;
 
         final menuItems = [
           if (!isLeaf)
             MenuItem(
               label: 'Add Key',
               icon: Icons.add,
-              onSelected: () => showNewKeyDialog(context, node_.address),
+              onSelected: () => showNewKeyDialog(
+                context,
+                keys.value!.getAddress(node_),
+              ),
             ),
           MenuItem(
             label: 'Delete Key',
             icon: Icons.delete,
             onSelected: () {
-              ref.read(keysProvider.notifier).removeLeaf(
-                    node_.address,
+              ref.read(keysProvider.notifier).remove(
+                    node_,
                   );
             },
           ),
-          MenuItem(
-            label: 'Move Key',
-            icon: Icons.edit,
-            onSelected: () {
-              showMoveKeyDialog(
-                context,
-                node_.address,
-              );
-            },
-          ),
+          // MenuItem(
+          //   label: 'Move Key',
+          //   icon: Icons.edit,
+          //   onSelected: () {
+          //     showMoveKeyDialog(
+          //       context,
+          //       keys.value!.getAddress(node_),
+          //     );
+          //   },
+          // ),
         ];
 
         void expandOrSelectNode() {
           if (isLeaf) {
-            ref.read(selectedAddressProvider.notifier).state = node_.address;
+            ref.read(selectedNodeIdProvider.notifier).state = nodeId;
           } else {
-            treeController.value.toggleExpansion(node_);
+            treeController.value.toggleExpansion(nodeId);
           }
         }
 
@@ -120,7 +132,7 @@ class KeyTree extends HookConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            node_.address.last.toString(),
+                            node_.key?.toString() ?? '_no_key_',
                           ),
                         ),
                       ],

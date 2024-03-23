@@ -29,7 +29,6 @@ class HomePage extends ConsumerWidget {
       }
     });
 
-    final keys = ref.watch(keysProvider);
     final selectedNode = ref.watch(selectedLeafProvider).value;
     final project = ref.watch(projectManagerProvider);
 
@@ -48,19 +47,26 @@ class HomePage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: keys.when(
-                          skipLoadingOnRefresh: true,
-                          data: (nodes) => nodes == null
-                              ? const Padding(
+                        child: Consumer(builder: (context, ref, child) {
+                          final keys = ref.watch(keysProvider);
+                          return keys.when(
+                            skipLoadingOnRefresh: true,
+                            data: (nodes) {
+                              if (nodes == null) {
+                                return const Padding(
                                   padding: EdgeInsets.all(8.0),
                                   child: Text('empty'),
-                                )
-                              : KeyTree(nodes.children),
-                          error: (e, s) => Text('$e\n$s'),
-                          loading: () => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
+                                );
+                              }
+
+                              return const KeyTree();
+                            },
+                            error: (e, s) => Text('$e\n$s'),
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }),
                       ),
                       const VerticalDivider(width: 1),
                       Expanded(

@@ -1,47 +1,8 @@
-import 'package:equatable/equatable.dart';
-
-sealed class Node extends Equatable {
-  const Node(this.address);
-
-  final List<Object> address;
-}
-
-class Leaf extends Node {
-  const Leaf(super.address, this.values);
-  final Map<String, String?> values;
-
-  Leaf copyWith({Map<String, String?>? values}) {
-    return Leaf(address, values ?? this.values);
-  }
-
-  Leaf updateFileValue(String file, String? value) {
-    return copyWith(
-      values: Map.from(values)..[file] = value,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'Leaf{$address, $values}';
-  }
-
-  @override
-  List<Object?> get props => [address];
-}
-
-class Parent extends Node {
-  const Parent(this.children, super.address);
-  final List<Node> children;
-
-  @override
-  List<Object?> get props => [address];
-}
-
-class NewNode {
+sealed class Node {
   final Object? key;
   final int id;
 
-  NewNode(this.id, {required this.key});
+  Node(this.id, {required this.key});
 
   @override
   String toString() {
@@ -49,9 +10,20 @@ class NewNode {
   }
 }
 
-class NewLeaf extends NewNode {
+class Parent extends Node {
+  Parent(
+    super.id, {
+    required super.key,
+  });
+  @override
+  String toString() {
+    return 'Parent{key: $key}';
+  }
+}
+
+class Leaf extends Node {
   final Map<String, String?> values;
-  NewLeaf(
+  Leaf(
     super.id, {
     required super.key,
     required this.values,
@@ -59,6 +31,17 @@ class NewLeaf extends NewNode {
 
   @override
   String toString() {
-    return 'NewLeaf{key: $key, values: $values}';
+    return 'Leaf{key: $key, values: $values}';
+  }
+
+  Leaf copyWith({
+    Object? key,
+    Map<String, String?>? values,
+  }) {
+    return Leaf(
+      id,
+      key: key ?? this.key,
+      values: values ?? this.values,
+    );
   }
 }

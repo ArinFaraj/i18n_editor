@@ -31,7 +31,7 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
             TextButton(
               onPressed: () {
                 try {
-                  ref.read(keysProvider.notifier).addEmptyLeaf(
+                  ref.read(keysProvider.notifier).addEmptyLeafAtAddress(
                         convertStringToAddress(controller.text),
                       );
                   Navigator.pop(context);
@@ -52,54 +52,54 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
   );
 }
 
-void showMoveKeyDialog(BuildContext context, List<Object> address) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return HookConsumer(builder: (context, WidgetRef ref, child) {
-        final controller = useTextEditingController(
-          text: convertAddressToString(address),
-        );
-        return AlertDialog(
-          title: const Text('Move Key'),
-          content: TextField(
-            autofocus: true,
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Key',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                try {
-                  ref.read(keysProvider.notifier).moveLeafAddress(
-                        address,
-                        convertStringToAddress(controller.text),
-                      );
-                  Navigator.pop(context);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString()),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Move'),
-            ),
-          ],
-        );
-      });
-    },
-  );
-}
+// void showMoveKeyDialog(BuildContext context, List<Object> address) {
+//   showDialog(
+//     context: context,
+//     builder: (context) {
+//       return HookConsumer(builder: (context, WidgetRef ref, child) {
+//         final controller = useTextEditingController(
+//           text: convertAddressToString(address),
+//         );
+//         return AlertDialog(
+//           title: const Text('Move Key'),
+//           content: TextField(
+//             autofocus: true,
+//             controller: controller,
+//             decoration: const InputDecoration(
+//               labelText: 'Key',
+//             ),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pop(context);
+//               },
+//               child: const Text('Cancel'),
+//             ),
+//             TextButton(
+//               onPressed: () {
+//                 try {
+//                   ref.read(keysProvider.notifier).moveToAddress(
+//                         address,
+//                         convertStringToAddress(controller.text),
+//                       );
+//                   Navigator.pop(context);
+//                 } catch (e) {
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                     SnackBar(
+//                       content: Text(e.toString()),
+//                     ),
+//                   );
+//                 }
+//               },
+//               child: const Text('Move'),
+//             ),
+//           ],
+//         );
+//       });
+//     },
+//   );
+// }
 
 String? convertAddressToString(List<dynamic>? address) {
   if (address == null) return null;
