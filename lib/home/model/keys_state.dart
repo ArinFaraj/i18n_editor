@@ -52,17 +52,18 @@ extension NewKeyStateExt on NewKeysState {
   }
 
   /// Removes [node] from the tree.
+  /// and remove empty parent nodes
   NewKeysState removeNode(Node node) {
-    var rnodeOrder = nodeOrder;
-    var rnodes = nodes;
-    var rparentOf = parentTree;
+    var newOrder = nodeOrder;
+    var newNodes = nodes;
+    var newParentTree = parentTree;
 
     // we could remove the parent node if it has no children
     void remove(Node node) {
       final id = node.id;
-      rnodeOrder = rnodeOrder.remove(id);
-      rnodes = rnodes.remove(id);
-      rparentOf = rparentOf.remove(id);
+      newOrder = newOrder.remove(id);
+      newNodes = newNodes.remove(id);
+      newParentTree = newParentTree.remove(id);
 
       if (node is! Leaf) {
         for (final child in getChildren(node)) {
@@ -74,9 +75,9 @@ extension NewKeyStateExt on NewKeysState {
     remove(node);
 
     return copyWith(
-      nodes: rnodes,
-      parentTree: rparentOf,
-      nodeOrder: rnodeOrder,
+      nodes: newNodes,
+      parentTree: newParentTree,
+      nodeOrder: newOrder,
     );
   }
 
@@ -126,11 +127,11 @@ extension NewKeyStateExt on NewKeysState {
     );
   }
 
-  NewKeysState addLeafAtAddress(
+  (NewKeysState, int) addLeafAtAddress(
     List<Object> address, {
     Map<String, String?> values = const {},
   }) {
-  assert(address.isNotEmpty, 'Address cannot be empty');
+    assert(address.isNotEmpty, 'Address cannot be empty');
     NewKeysState result = this;
     Node findOrCreateParentChain(List<Object> address, [int? parentId]) {
       final rootNodes = result.nodeOrder
@@ -175,9 +176,12 @@ extension NewKeyStateExt on NewKeysState {
       values: values,
     );
 
-    return result.addNode(
-      newNode,
-      parentId: parent?.id,
+    return (
+      result.addNode(
+        newNode,
+        parentId: parent?.id,
+      ),
+      newNode.id
     );
   }
 }

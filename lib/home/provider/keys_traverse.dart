@@ -17,6 +17,7 @@ extension NewKeyStateTraverse on NewKeysState {
     return nodeOrder.where((e) => parentTree[e] == id).toIList();
   }
 
+  /// Gets the root nodes.
   List<int> getRootNodeIds() {
     return nodeOrder.where((e) => parentTree[e] == null).toList();
   }
@@ -55,6 +56,8 @@ extension NewKeyStateTraverse on NewKeysState {
     return null;
   }
 
+  /// Gets the address of [node].
+  /// e.g.: [root, parent, node]
   List<Object> getAddress(Node node) {
     final List<Object> address = [if (node.key != null) node.key!];
     var parent = getParent(node);

@@ -1,4 +1,5 @@
 import 'package:i18n_editor/home/model/keys_state.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'dart:convert';
@@ -191,7 +192,9 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
   }
 
   void addEmptyLeafAtAddress(List<Object> convertStringToAddress) {
-    state = AsyncData(state.value?.addLeafAtAddress(convertStringToAddress));
+    final result = state.value!.addLeafAtAddress(convertStringToAddress);
+    state = AsyncData(result.$1);
+    ref.read(selectedNodeIdProvider.notifier).state = result.$2;
   }
 
   void resetLeafChanges(Leaf node, String filePath) {
