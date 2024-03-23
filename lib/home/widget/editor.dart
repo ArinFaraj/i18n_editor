@@ -118,6 +118,10 @@ class LocaleKeyEditor extends HookConsumerWidget {
                                   },
                                 ),
                               );
+                          ref.read(modifiedNodesProvider.notifier).add(
+                            address: node.id,
+                            changedFiles: [filePath],
+                          );
                         });
                       },
                     ),
@@ -133,6 +137,10 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         ref
                             .read(keysProvider.notifier)
                             .resetLeafChanges(node, filePath);
+                        ref.read(modifiedNodesProvider.notifier).remove(
+                          address: node.id,
+                          changedFiles: [filePath],
+                        );
                       },
                     ),
                   ),

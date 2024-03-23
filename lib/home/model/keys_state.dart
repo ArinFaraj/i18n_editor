@@ -58,7 +58,6 @@ extension NewKeyStateExt on NewKeysState {
     var newNodes = nodes;
     var newParentTree = parentTree;
 
-    // we could remove the parent node if it has no children
     void remove(Node node, {bool removeParent = true}) {
       final id = node.id;
       newOrder = newOrder.remove(id);
