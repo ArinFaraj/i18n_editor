@@ -153,17 +153,17 @@ void main() {
 
     test('add empty leaf at address', () {
       final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
-      final newState = state.addLeafAtAddress(['key9']);
+      final (newState, _) = state.addLeafAtAddress(['key9']);
       expect(newState.nodes[newState.nodeOrder.last]!.key, 'key9');
     });
     test('add empty leaf at address with existing parent', () {
       final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
-      final newState = state.addLeafAtAddress(['key3', 'key6']);
+      final (newState, _) = state.addLeafAtAddress(['key3', 'key6']);
       expect(newState.nodes[newState.nodeOrder.last]!.key, 'key6');
     });
     test('add empty leaf at address with non existing parent', () {
       final state = newKeysNotifier.extractNodes(baseLocalePath, files)!;
-      final newState = state.addLeafAtAddress(['key10', 'key11', 'key6']);
+      final (newState, _) = state.addLeafAtAddress(['key10', 'key11', 'key6']);
       final order = newState.nodeOrder.reversed;
       expect(newState.nodes[order[0]]!.key, 'key6');
       expect(newState.nodes[order[1]]!.key, 'key11');
