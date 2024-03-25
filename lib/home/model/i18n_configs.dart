@@ -18,6 +18,16 @@ class I18nConfigs {
     };
   }
 
+  I18nConfigs copyWith({
+    String? defaultLocale,
+    String? filePrefix,
+  }) {
+    return I18nConfigs(
+      defaultLocale: defaultLocale ?? this.defaultLocale,
+      filePrefix: filePrefix ?? this.filePrefix,
+    );
+  }
+
   @override
   String toString() {
     return 'defaultLocale: $defaultLocale, filePrefix: $filePrefix';

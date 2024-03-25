@@ -6,69 +6,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
-import 'package:i18n_editor/home/provider/i18n_configs_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
+import 'package:i18n_editor/home/widget/i18n_config_dialog.dart';
 import 'package:i18n_editor/home/widget/menu_entry.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
 
 class HomeMenuBar extends ConsumerStatefulWidget {
-  const HomeMenuBar({
-    super.key,
-  });
+  const HomeMenuBar({super.key});
 
   @override
-  ConsumerState<HomeMenuBar> createState() => _MyMenuBarState();
+  ConsumerState<HomeMenuBar> createState() => HomeMenuBarState();
 }
 
-class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
+class HomeMenuBarState extends ConsumerState<HomeMenuBar> {
   ShortcutRegistryEntry? _shortcutsEntry;
-
-  @override
-  void dispose() {
-    _shortcutsEntry?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 8),
-        Icon(
-          Icons.language,
-          size: 18,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        const SizedBox(width: 6),
-        MenuBar(
-          style: const MenuStyle(
-            elevation: MaterialStatePropertyAll(0.0),
-            backgroundColor: MaterialStatePropertyAll(Colors.transparent),
-          ),
-          children: MenuEntry.build(_getMenus()),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Center(
-            child: Text(
-              ref.watch(projectManagerProvider) ?? 'No Project Opened',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-        Center(
-          child: Text(
-            ref.watch(i18nConfigsProvider).value?.toString() ??
-                'No i18n Configs Loaded',
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(width: 16),
-      ],
-    );
-  }
 
   List<MenuEntry> _getMenus() {
     final recentProjects = ref.watch(recentProjectsProvider).requireValue;
@@ -107,6 +60,15 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
               ref.read(projectManagerProvider.notifier).openProject(dir);
             },
           ),
+          if (ref.watch(projectManagerProvider) != null)
+            MenuEntry(
+              label: 'Close Project',
+              shortcut:
+                  const SingleActivator(LogicalKeyboardKey.keyQ, control: true),
+              onPressed: () {
+                ref.read(projectManagerProvider.notifier).closeProject();
+              },
+            ),
           // recent projects
           MenuEntry(
             label: 'Recent Projects',
@@ -168,5 +130,56 @@ class _MyMenuBarState extends ConsumerState<HomeMenuBar> {
       MenuEntry.shortcuts(result),
     );
     return result;
+  }
+
+  @override
+  void dispose() {
+    _shortcutsEntry?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 8),
+        Icon(
+          Icons.language,
+          size: 18,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(width: 6),
+        MenuBar(
+          style: const MenuStyle(
+            elevation: MaterialStatePropertyAll(0.0),
+            backgroundColor: MaterialStatePropertyAll(Colors.transparent),
+          ),
+          children: MenuEntry.build(_getMenus()),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Center(
+            child: Text(
+              ref.watch(projectManagerProvider) ?? '',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        if (ref.watch(projectManagerProvider) != null)
+          Center(
+            child: IconButton(
+              style: IconButton.styleFrom(
+                minimumSize: Size.zero,
+                padding: EdgeInsets.zero,
+              ),
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                showI18nConfigsDialog(context, ref);
+              },
+            ),
+          ),
+        const SizedBox(width: 16),
+      ],
+    );
   }
 }

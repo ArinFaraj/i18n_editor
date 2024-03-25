@@ -46,6 +46,23 @@ class I18nConfigsNotifier extends AsyncNotifier<I18nConfigs?> {
     );
   }
 
+  Future<void> updateFile({
+    required String prefix,
+    required String defaultLocale,
+  }) async {
+    final i18nConfigs = state.value!.copyWith(
+      filePrefix: prefix,
+      defaultLocale: defaultLocale,
+    );
+    final projectPath = ref.read(projectManagerProvider);
+    if (projectPath == null) {
+      throw Exception('No project path');
+    }
+    final i18nFile = File(join(projectPath, _i18nFileName));
+    await i18nFile.writeAsString(YamlWriter().write(i18nConfigs.toMap()));
+    state = AsyncValue.data(i18nConfigs);
+  }
+
   Future<I18nConfigs> _createFile(
     String prefix,
     String defaultLocale,

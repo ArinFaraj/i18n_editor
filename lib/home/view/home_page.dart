@@ -41,7 +41,14 @@ class HomePage extends ConsumerWidget {
           Expanded(
             child: project == null
                 ? const Center(
-                    child: Icon(Icons.language_outlined, size: 100),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.language_outlined, size: 100),
+                        SizedBox(height: 16),
+                        Text('Open a project to start editing'),
+                      ],
+                    ),
                   )
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
