@@ -19,9 +19,10 @@ file_prefix: strings
 
 ## TODO
 
-- [ ] Change the state structure to maps
+- [ ] Drop a folder to open it as a project
+- [x] Change the state structure to maps
 - [ ] Drag and drop keys to move them into or out of sub keys
 - [ ] Add new language
-- [x] Rename keys
+- [ ] Rename keys
 - [ ] Option to choose the base file instead of basing it on the prefix
 - [ ] New layout to view all keys for all languages in a list view
