@@ -197,12 +197,6 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     ref.read(selectedNodeIdProvider.notifier).state = result.$2;
   }
 
-  // void moveToAddress(List<Object> original, List<Object> finalAddress) {
-  //   final result = state.value!.moveToAddress(original, finalAddress);
-  //   state = AsyncData(result.$1);
-  //   ref.read(selectedNodeIdProvider.notifier).state = result.$2;
-  // }
-
   void resetLeafChanges(Leaf node, String filePath) {
     final files = ref.read(filesNotifierProvider).value;
     if (files == null) return;

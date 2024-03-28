@@ -50,7 +50,6 @@ class FilesNotifier extends AsyncNotifier<Files?> {
       for (final file in files) {
         final fileContent = await File(file).readAsString();
         final fileJson = json.decode(fileContent) as Map<String, dynamic>;
-        // final nodes = extractNodes(fileJson);
         contentOfFiles[basename(file)] = fileJson;
       }
 
