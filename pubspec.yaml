@@ -116,3 +116,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+msix_config:
+  display_name: I18n Editor
+  publisher_display_name: Arin Faraj
+  identity_name: at.arin.i18nEditor
+  msix_version: 1.0.0.0
+  # logo_path: C:\path\to\logo.png
+  # capabilities: internetClient, location, microphone, webcam

@@ -17,6 +17,7 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
           content: TextField(
             autofocus: true,
             controller: controller,
+            onSubmitted: (_) => submit(ref, controller, context),
             decoration: const InputDecoration(
               labelText: 'Key',
             ),
@@ -30,18 +31,7 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  ref.read(keysProvider.notifier).addEmptyLeafAtAddress(
-                        convertStringToAddress(controller.text),
-                      );
-                  Navigator.pop(context);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString()),
-                    ),
-                  );
-                }
+                submit(ref, controller, context);
               },
               child: const Text('Create'),
             ),
@@ -50,6 +40,22 @@ void showNewKeyDialog(BuildContext context, [List<dynamic>? prefix]) {
       });
     },
   );
+}
+
+void submit(
+    WidgetRef ref, TextEditingController controller, BuildContext context) {
+  try {
+    ref.read(keysProvider.notifier).addEmptyLeafAtAddress(
+          convertStringToAddress(controller.text),
+        );
+    Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()),
+      ),
+    );
+  }
 }
 
 // void showMoveKeyDialog(BuildContext context, List<Object> address) {
