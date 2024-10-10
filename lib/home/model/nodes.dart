@@ -8,6 +8,8 @@ sealed class Node {
   String toString() {
     return 'NewNode{key: $key}';
   }
+
+  Node copyWith({Object? key});
 }
 
 class Parent extends Node {
@@ -18,6 +20,14 @@ class Parent extends Node {
   @override
   String toString() {
     return 'Parent{key: $key}';
+  }
+
+  @override
+  Parent copyWith({Object? key}) {
+    return Parent(
+      id,
+      key: key ?? this.key,
+    );
   }
 }
 
@@ -34,6 +44,7 @@ class Leaf extends Node {
     return 'Leaf{key: $key, values: $values}';
   }
 
+  @override
   Leaf copyWith({
     Object? key,
     Map<String, String?>? values,

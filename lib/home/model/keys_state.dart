@@ -141,6 +141,83 @@ extension NewKeyStateExt on NewKeysState {
     );
   }
 
+  NewKeysState moveNodeToAddress(Node node, List<Object> address) {
+    assert(address.isNotEmpty, 'Address cannot be empty');
+    NewKeysState result = this;
+
+    Node findOrCreateParentChain(List<Object> address, [int? parentId]) {
+      final rootNodes = result.nodeOrder
+          .where((element) => result.parentTree[element] == parentId)
+          .toList();
+      Node? parentNode;
+      for (final nodeId in rootNodes) {
+        final node = result.nodes[nodeId]!;
+        if (node.key == address.first) {
+          parentNode = node;
+          break;
+        }
+      }
+      if (parentNode == null) {
+        parentNode = Parent(
+          getNewId(result.nodeOrder.toList()),
+          key: address.first,
+        );
+        result = result.addNode(
+          parentNode,
+          parentId: parentId,
+        );
+        assert(result.nodes.containsKey(parentNode.id));
+      }
+      if (address.length == 1) {
+        return parentNode;
+      } else {
+        return findOrCreateParentChain(
+          address.sublist(1),
+          parentNode.id,
+        );
+      }
+    }
+
+    final newParent = address.length > 1
+        ? findOrCreateParentChain(address.sublist(0, address.length - 1))
+        : null;
+
+    // Update the node's key to match the last part of the address
+    final updatedNode = node.copyWith(key: address.last);
+
+    // Remove the node from its current position in the tree
+    final oldParentId = result.parentTree[node.id];
+    result = result.copyWith(
+      parentTree: result.parentTree.remove(node.id),
+      nodeOrder: result.nodeOrder.remove(node.id),
+    );
+
+    // Add the updated node to its new position
+    result = result.copyWith(
+      nodes: result.nodes.add(updatedNode.id, updatedNode),
+      parentTree: newParent != null
+          ? result.parentTree.add(updatedNode.id, newParent.id)
+          : result.parentTree,
+      nodeOrder: result.nodeOrder.add(updatedNode.id),
+    );
+
+    // Update the parent of all immediate children
+    if (node is Parent) {
+      final childrenIds = result.parentTree.entries
+          .where((entry) => entry.value == node.id)
+          .map((entry) => entry.key)
+          .toList();
+
+      for (final childId in childrenIds) {
+        result = result.copyWith(
+          parentTree: result.parentTree.add(childId, updatedNode.id),
+        );
+      }
+    }
+
+    return result;
+  }
+
   (NewKeysState, int) addLeafAtAddress(
     List<Object> address, {
     Map<String, String?> values = const {},

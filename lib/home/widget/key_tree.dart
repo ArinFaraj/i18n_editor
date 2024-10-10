@@ -85,16 +85,17 @@ class _KeyTreeState extends ConsumerState<KeyTree> {
                   );
             },
           ),
-          // MenuItem(
-          //   label: 'Move Key',
-          //   icon: Icons.edit,
-          //   onSelected: () {
-          //     showMoveKeyDialog(
-          //       context,
-          //       keys.value!.getAddress(node_),
-          //     );
-          //   },
-          // ),
+          MenuItem(
+            label: 'Move Key',
+            icon: Icons.edit,
+            onSelected: () {
+              showMoveKeyDialog(
+                context,
+                node_,
+                keys.value!.getAddress(node_),
+              );
+            },
+          ),
         ];
 
         void expandOrSelectNode() {

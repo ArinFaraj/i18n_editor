@@ -191,8 +191,8 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     state = AsyncData(state.value?.updateNode(currentNode, newNode));
   }
 
-  void addEmptyLeafAtAddress(List<Object> convertStringToAddress) {
-    final result = state.value!.addLeafAtAddress(convertStringToAddress);
+  void addEmptyLeafAtAddress(List<Object> address) {
+    final result = state.value!.addLeafAtAddress(address);
     state = AsyncData(result.$1);
     ref.read(selectedNodeIdProvider.notifier).state = result.$2;
   }
@@ -213,6 +213,10 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     });
 
     state = AsyncData(state.value?.updateNode(node, newValue));
+  }
+
+  void moveToAddress(Node node, List<Object> address) {
+    state = AsyncData(state.value?.moveNodeToAddress(node, address));
   }
 }
 
