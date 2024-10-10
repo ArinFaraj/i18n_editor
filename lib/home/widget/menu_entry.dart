@@ -18,8 +18,8 @@ class MenuEntry {
 
   static List<Widget> build(List<MenuEntry> selections) {
     var buttonStyle = ButtonStyle(
-      minimumSize: MaterialStateProperty.all(const Size(40, 40)),
-      elevation: MaterialStateProperty.all(0.0),
+      minimumSize: WidgetStateProperty.all(const Size(40, 40)),
+      elevation: WidgetStateProperty.all(0.0),
     );
     Widget buildSelection(MenuEntry selection) {
       if (selection.menuChildren != null) {

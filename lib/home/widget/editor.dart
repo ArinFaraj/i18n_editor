@@ -99,7 +99,7 @@ class LocaleKeyEditor extends HookConsumerWidget {
                         filled: true,
                         fillColor: Theme.of(context)
                             .colorScheme
-                            .surfaceVariant
+                            .surfaceContainerHighest
                             .withOpacity(0.2),
                         border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),

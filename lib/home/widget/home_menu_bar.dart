@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n_editor/core/settings/recent_projects.dart';
 import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
+import 'package:i18n_editor/home/provider/keys_traverse.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
 import 'package:i18n_editor/home/provider/project_manager.dart';
+import 'package:i18n_editor/home/provider/selected_leaf.dart';
 import 'package:i18n_editor/home/widget/i18n_config_dialog.dart';
 import 'package:i18n_editor/home/widget/menu_entry.dart';
 import 'package:i18n_editor/home/widget/new_key_dialog.dart';
@@ -25,7 +27,9 @@ class HomeMenuBarState extends ConsumerState<HomeMenuBar> {
 
   List<MenuEntry> _getMenus() {
     final recentProjects = ref.watch(recentProjectsProvider).requireValue;
-    final keysLoaded = ref.watch(keysProvider).valueOrNull != null;
+    final keys = ref.watch(keysProvider).valueOrNull;
+    final keysLoaded = keys != null;
+    final selectedNode_ = ref.watch(selectedLeafProvider);
     final List<MenuEntry> result = <MenuEntry>[
       MenuEntry(
         label: 'File',
@@ -121,6 +125,18 @@ class HomeMenuBarState extends ConsumerState<HomeMenuBar> {
             ),
             onPressed: keysLoaded ? () => showNewKeyDialog(context) : null,
           ),
+          MenuEntry(
+            label: 'Add Relative Key',
+            shortcut: const SingleActivator(
+              LogicalKeyboardKey.keyN,
+              control: true,
+              shift: true,
+            ),
+            onPressed: selectedNode_.valueOrNull != null
+                ? () => showNewKeyDialog(context,
+                    keys?.getAddress(selectedNode_.value!)?..removeLast())
+                : null,
+          ),
         ],
       )
     ];
@@ -151,8 +167,8 @@ class HomeMenuBarState extends ConsumerState<HomeMenuBar> {
         const SizedBox(width: 6),
         MenuBar(
           style: const MenuStyle(
-            elevation: MaterialStatePropertyAll(0.0),
-            backgroundColor: MaterialStatePropertyAll(Colors.transparent),
+            elevation: WidgetStatePropertyAll(0.0),
+            backgroundColor: WidgetStatePropertyAll(Colors.transparent),
           ),
           children: MenuEntry.build(_getMenus()),
         ),
