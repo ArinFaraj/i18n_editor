@@ -1,5 +1,5 @@
 sealed class Node {
-  final Object? key;
+  final String? key;
   final int id;
 
   Node(this.id, {required this.key});
@@ -9,7 +9,7 @@ sealed class Node {
     return 'NewNode{key: $key}';
   }
 
-  Node copyWith({Object? key});
+  Node copyWith({String? key});
 }
 
 class Parent extends Node {
@@ -23,7 +23,7 @@ class Parent extends Node {
   }
 
   @override
-  Parent copyWith({Object? key}) {
+  Parent copyWith({String? key}) {
     return Parent(
       id,
       key: key ?? this.key,
@@ -46,7 +46,7 @@ class Leaf extends Node {
 
   @override
   Leaf copyWith({
-    Object? key,
+    String? key,
     Map<String, String?>? values,
   }) {
     return Leaf(

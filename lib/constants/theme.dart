@@ -13,10 +13,10 @@ final lightTheme = Provider(
       // fontFamily: fontFamily,
       colorScheme: const ColorScheme.light(
         primary: cPrimaryColor,
-        surfaceVariant: Colors.white,
+        surfaceContainerHighest: Colors.white,
         outline: Color(0xFFC6C6CC),
         // surface: cSurfaceWhite,
-        background: cSurfaceWhite,
+        surface: cSurfaceWhite,
       ),
       textTheme: const TextTheme(
         titleLarge: TextStyle(

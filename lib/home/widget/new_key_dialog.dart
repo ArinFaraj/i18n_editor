@@ -114,16 +114,9 @@ void _moveKey(WidgetRef ref, Node node, TextEditingController controller,
 }
 
 String? convertAddressToString(List<dynamic>? address) {
-  if (address == null) return null;
-  return address.map((e) => e.toString()).join('.');
+  return address?.map((e) => e.toString()).join('.');
 }
 
-List<Object> convertStringToAddress(String address) {
-  return address.split('.').map((e) {
-    if (int.tryParse(e) != null) {
-      return int.parse(e);
-    }
-
-    return e;
-  }).toList();
+List<String> convertStringToAddress(String address) {
+  return address.split('.').toList();
 }

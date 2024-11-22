@@ -141,11 +141,11 @@ extension NewKeyStateExt on NewKeysState {
     );
   }
 
-  NewKeysState moveNodeToAddress(Node node, List<Object> address) {
+  NewKeysState moveNodeToAddress(Node node, List<String> address) {
     assert(address.isNotEmpty, 'Address cannot be empty');
     NewKeysState result = this;
 
-    Node findOrCreateParentChain(List<Object> address, [int? parentId]) {
+    Node findOrCreateParentChain(List<String> address, [int? parentId]) {
       final rootNodes = result.nodeOrder
           .where((element) => result.parentTree[element] == parentId)
           .toList();
@@ -186,7 +186,7 @@ extension NewKeyStateExt on NewKeysState {
     final updatedNode = node.copyWith(key: address.last);
 
     // Remove the node from its current position in the tree
-    final oldParentId = result.parentTree[node.id];
+    // final oldParentId = result.parentTree[node.id];
     result = result.copyWith(
       parentTree: result.parentTree.remove(node.id),
       nodeOrder: result.nodeOrder.remove(node.id),
@@ -219,12 +219,12 @@ extension NewKeyStateExt on NewKeysState {
   }
 
   (NewKeysState, int) addLeafAtAddress(
-    List<Object> address, {
+    List<String> address, {
     Map<String, String?> values = const {},
   }) {
     assert(address.isNotEmpty, 'Address cannot be empty');
     NewKeysState result = this;
-    Node findOrCreateParentChain(List<Object> address, [int? parentId]) {
+    Node findOrCreateParentChain(List<String> address, [int? parentId]) {
       final rootNodes = result.nodeOrder
           .where((element) => result.parentTree[element] == parentId)
           .toList();

@@ -41,7 +41,7 @@ class DCheckbox extends HookWidget {
               value: value,
               onChanged: (_) {},
               side: BorderSide.none,
-              fillColor: const MaterialStatePropertyAll(Colors.transparent),
+              fillColor: const WidgetStatePropertyAll(Colors.transparent),
             ),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:i18n_editor/home/model/keys_state.dart';
 import 'package:i18n_editor/home/provider/selected_leaf.dart';
+import 'package:i18n_editor/home/widget/key_tree.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'dart:convert';
@@ -49,7 +50,7 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
 
     int decodeNode(
       Object jsonValue, [
-      List<Object>? path,
+      List<String>? path,
     ]) {
       final nodeKey = path?.last;
       final id = getNewId(nodeOrder);
@@ -64,13 +65,13 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
             final childId = decodeNode(value, newPath);
             parentTree[childId] = id;
           }
-        case List<Object?> list:
+        case List<String?> list:
           nodes[id] = Parent(id, key: nodeKey);
           for (int i = 0; i < list.length; i++) {
             final child = list[i];
             if (child == null) continue;
 
-            final newPath = [...?path, i];
+            final newPath = [...?path, i.toString()];
             final childId = decodeNode(child, newPath);
             parentTree[childId] = id;
           }
@@ -191,7 +192,7 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     state = AsyncData(state.value?.updateNode(currentNode, newNode));
   }
 
-  void addEmptyLeafAtAddress(List<Object> address) {
+  void addEmptyLeafAtAddress(List<String> address) {
     final result = state.value!.addLeafAtAddress(address);
     state = AsyncData(result.$1);
     ref.read(selectedNodeIdProvider.notifier).state = result.$2;
@@ -215,7 +216,7 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
     state = AsyncData(state.value?.updateNode(node, newValue));
   }
 
-  void moveToAddress(Node node, List<Object> address) {
+  void moveToAddress(Node node, List<String> address) {
     state = AsyncData(state.value?.moveNodeToAddress(node, address));
   }
 }
@@ -223,4 +224,49 @@ class NewKeysNotifier extends AsyncNotifier<NewKeysState?> {
 final keysProvider = AsyncNotifierProvider<NewKeysNotifier, NewKeysState?>(
   NewKeysNotifier.new,
   name: 'keys',
+);
+
+final filteredKeysProvider = FutureProvider(
+  (ref) async {
+    final keys = await ref.watch(keysProvider.future);
+    final filter = ref.watch(filterProvider);
+
+    if (keys == null) return null;
+    if (filter.isEmpty) return keys;
+
+    final nodes = keys.nodes;
+    final nodeOrder = keys.nodeOrder;
+    final parentTree = keys.parentTree;
+
+    var filteredNodes = IMap<int, Node>();
+
+    void addNode(Node node) {
+      final id = node.id;
+      filteredNodes = filteredNodes.add(id, node);
+      final parent = parentTree[id];
+      if (parent == null) return;
+      addNode(nodes[parent]!);
+    }
+
+    void addChildren(Node node) {
+      final children = keys.getChildren(node);
+      for (final child in children) {
+        addNode(child);
+        addChildren(child);
+      }
+    }
+
+    for (final id in nodeOrder) {
+      final node = nodes[id]!;
+      if (node.key?.contains(filter) ?? false) {
+        addNode(node);
+        addChildren(node);
+      }
+    }
+
+    return keys.copyWith(
+      nodes: filteredNodes,
+    );
+  },
+  name: 'filteredKeys',
 );

@@ -18,13 +18,13 @@ extension NewKeyStateTraverse on NewKeysState {
   }
 
   /// Gets the root nodes.
-  List<int> getRootNodeIds() {
-    return nodeOrder.where((e) => parentTree[e] == null).toList();
+  Iterable<int> getRootNodeIds() {
+    return nodeOrder.where((e) => parentTree[e] == null);
   }
 
   /// Gets the iterable children ids of node [id].
-  List<int> getChildrenIdsIterable(int id) {
-    return nodeOrder.where((e) => parentTree[e] == id).toList();
+  Iterable<int> getChildrenIdsIterable(int id) {
+    return nodeOrder.where((e) => parentTree[e] == id);
   }
 
   /// Checks if [node] has children.
