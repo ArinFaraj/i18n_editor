@@ -3,6 +3,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:i18n_editor/home/model/nodes.dart';
+import 'package:i18n_editor/home/provider/files_provider.dart';
 import 'package:i18n_editor/home/provider/keys_provider.dart';
 import 'package:i18n_editor/home/provider/keys_traverse.dart';
 import 'package:i18n_editor/home/provider/modified_nodes_porvider.dart';
@@ -59,6 +60,7 @@ class _KeyTreeState extends ConsumerState<KeyTree> {
     final selectedId = ref.watch(selectedNodeIdProvider);
     final modifiedNodes = ref.watch(modifiedNodesProvider);
 
+    final files = ref.watch(filesNotifierProvider).valueOrNull;
     ref.listen(filteredKeysProvider, (_, __) => updateTree());
     final filter = ref.watch(filterProvider);
     final isFiltering = filter != '';
@@ -97,6 +99,14 @@ class _KeyTreeState extends ConsumerState<KeyTree> {
               if (node_ == null) return const SizedBox();
               final isSelected = selectedId == nodeId;
               final isLeaf = node_ is Leaf;
+              final filledLanguages = !isLeaf
+                  ? null
+                  : node_.values.values
+                      .where((e) => e?.isNotEmpty ?? false)
+                      .toList();
+
+              final hasValuesForAllLanguages =
+                  !isLeaf ? true : filledLanguages?.length == files?.length;
               final isModified = (modifiedNodes[nodeId]?.length ?? 0) > 0;
 
               final menuItems = [
@@ -161,7 +171,11 @@ class _KeyTreeState extends ConsumerState<KeyTree> {
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Badge(
-                          isLabelVisible: isModified,
+                          textColor: hasValuesForAllLanguages
+                              ? Colors.green
+                              : Colors.red,
+                          isLabelVisible:
+                              !hasValuesForAllLanguages || isModified,
                           child: Row(
                             children: [
                               if (!isLeaf)
